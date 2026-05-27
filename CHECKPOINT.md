@@ -5,6 +5,8 @@ Last updated: 2026-05-28
 ## Current Status
 
 - Phase 1 selesai: structure + layout + routing + placeholder pages.
+- Phase 2 selesai: database layer SQLite via `@tauri-apps/plugin-sql`.
+- Phase 3 selesai: Billing page fully functional (CRUD + search + filter + seed data).
 - Shared layout sudah terpasang (`components/Layout.tsx`) dengan:
   - sidebar navigation
   - topbar title + realtime timestamp (hydration-safe)
@@ -15,15 +17,47 @@ Last updated: 2026-05-28
   - `pages/progress/index.tsx`
   - `pages/prompts/index.tsx`
   - `pages/sessions/index.tsx`
-  - `pages/billing/index.tsx`
+  - `pages/billing/index.tsx` ← **functional**
 - Design tokens + global styles sudah diterapkan di `styles/globals.css`.
 - Next static export sudah aktif di `next.config.ts` (`output: "export"` + `images.unoptimized: true`).
 - Tauri v2 sudah terinisialisasi (`src-tauri/*` sudah ada).
 
 ## Latest Commit
 
-- Commit: `590714c`
-- Message: `feat: phase 1 - layout, routing, placeholder pages`
+- Phase 3 commit: `12f8d52`
+- Message: `feat: billing page fully functional — CRUD, search, filter, summary`
+
+## Database Layer (Phase 2 — selesai)
+
+```
+lib/
+└── database/
+    ├── index.ts       — barrel export
+    ├── db.ts          — connection + init + seedInitialData
+    ├── schema.ts      — SQL schema + type constants
+    ├── types.ts       — TypeScript interfaces
+    └── repositories/
+        ├── billing.repo.ts
+        ├── project.repo.ts
+        ├── prompt.repo.ts
+        └── session.repo.ts
+```
+
+## Billing Feature (Phase 3 — selesai)
+
+```
+hooks/
+└── useBilling.ts              — state + CRUD + search/filter
+
+components/billing/
+├── BillingCard.tsx            — card per item, hover actions, status toggle
+└── BillingForm.tsx            — modal form create/edit
+
+pages/billing/
+└── index.tsx                  — full page: list, search, filter, summary, modals
+```
+
+Seed data: Claude Pro (USD 20/month) auto-inserted on first launch.
 
 ## Known Notes
 
@@ -35,31 +69,27 @@ Last updated: 2026-05-28
   - `if (Test-Path .next) { Remove-Item -Recurse -Force .next }`
   - start ulang `npx tauri dev`
 
-## Phase 2 Preparation (Database Layer)
+## Phase 4 Candidates
 
-Target fase berikutnya: setup database layer SQLite via Tauri commands.
+Target fase berikutnya (belum ada spec):
+- PRD Manager — pages/prd + ProjectRepo + PrdRepo
+- Session Log — pages/sessions + SessionRepo
+- Prompt Vault — pages/prompts + PromptRepo
+- Progress Tracker — pages/progress + ProjectRepo
 
-Planned baseline:
+## Smoke Test Checklist (Phase 3)
 
-1. Define DB module boundaries:
-   - schema/migrations
-   - query layer (Rust)
-   - command handlers (Tauri `invoke`)
-2. Create initial schema versioning strategy.
-3. Add first migration for core entities (minimal):
-   - projects
-   - prds
-   - sessions
-   - prompts
-   - progress entries
-4. Expose typed Tauri commands for CRUD (no direct frontend DB access).
-5. Frontend data-access wrappers (`invoke`) per feature module.
-6. Sanitize inputs + use parameterized queries only.
-7. Verify with local smoke test from UI route.
+Jalankan `npx tauri dev` dari `d:\Forge-Lab\forge` lalu verifikasi:
 
-## Resume Prompt (Optional)
-
-Gunakan prompt ini untuk lanjut cepat:
-
-> "Lanjut Phase 2 Forge: setup database layer SQLite via Tauri commands dengan migration versioned, query parameterized, dan wrapper invoke typed di frontend. Mulai dari fondasi schema + 1 migration awal untuk projects, prds, sessions, prompts, progress."
-
+| Test | Expected |
+|------|----------|
+| Buka halaman Billing | Claude Pro muncul sebagai item pertama |
+| Summary bar terlihat | Total Aktif: 1 · Bulan Ini: ~20 · Tahunan: ~240 |
+| Klik "+ Add Subscription" | Modal BillingForm terbuka |
+| Isi form → klik "Add Subscription" | Data tersimpan, modal tutup, list refresh |
+| Hover card → klik Pencil | Edit modal terbuka dengan data existing |
+| Edit data → "Save Changes" | Data terupdate di list |
+| Hover card → klik Trash | Confirm dialog muncul → data terhapus |
+| Klik status badge di card | Status toggle (active→paused→active) |
+| Ketik di search box | List filter realtime |
+| Klik tab "Active" / "Paused" | Filter bekerja |
