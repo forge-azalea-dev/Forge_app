@@ -35,7 +35,7 @@ export async function seedInitialData(): Promise<void> {
   const existing = await db.select<{ count: number }[]>(
     "SELECT COUNT(*) as count FROM billing"
   );
-  if (existing[0].count > 0) return;
+  if (!existing[0] || existing[0].count > 0) return;
 
   const { BillingRepo } = await import("./repositories/billing.repo");
   await BillingRepo.create({
