@@ -1,6 +1,6 @@
 # Forge Checkpoint
 
-Last updated: 2026-05-28
+Last updated: 2026-05-28 (smoke test passed ✓)
 
 ## Current Status
 
@@ -24,8 +24,8 @@ Last updated: 2026-05-28
 
 ## Latest Commit
 
-- Phase 3 commit: `12f8d52`
-- Message: `feat: billing page fully functional — CRUD, search, filter, summary`
+- Latest: `c532a70` — `fix: add sql:allow-execute permission to Tauri capability`
+- Phase 3: `12f8d52` — `feat: billing page fully functional — CRUD, search, filter, summary`
 
 ## Database Layer (Phase 2 — selesai)
 
@@ -68,6 +68,20 @@ Seed data: Claude Pro (USD 20/month) auto-inserted on first launch.
 - Jika dev server error karena cache `.next`, stop dev lalu:
   - `if (Test-Path .next) { Remove-Item -Recurse -Force .next }`
   - start ulang `npx tauri dev`
+
+## Tauri Permission Notes (PENTING)
+
+`sql:default` dari `tauri-plugin-sql` v2 hanya grant: `allow-close`, `allow-load`, `allow-select`.
+`allow-execute` (untuk INSERT/UPDATE/DELETE/CREATE TABLE) **TIDAK termasuk default** — harus eksplisit.
+
+Setiap plugin Tauri baru yang ditambah: **selalu cek capabilities** dan tambah permission spesifik yang dibutuhkan.
+Jangan assume `plugin:default` sudah mencakup semua operasi.
+
+Capabilities saat ini (`src-tauri/capabilities/default.json`):
+```json
+"sql:default",       // allow-close, allow-load, allow-select
+"sql:allow-execute"  // INSERT, UPDATE, DELETE, CREATE TABLE
+```
 
 ## Phase 4 Candidates
 
