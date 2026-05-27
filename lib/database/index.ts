@@ -1,4 +1,4 @@
-export { getDb, generateId, now } from "./db";
+export { getDb, generateId, now, seedInitialData } from "./db";
 export {
   SCHEMA_SQL,
   PHASES,
