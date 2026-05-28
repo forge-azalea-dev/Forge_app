@@ -86,3 +86,6 @@ export type UpdateSession = Partial<Omit<CreateSession, "started_at">>;
 
 export type CreateBilling = Omit<Billing, "id" | "created_at" | "updated_at">;
 export type UpdateBilling = Partial<CreateBilling>;
+
+export type CreatePrd = Omit<Prd, "id" | "created_at" | "updated_at">;
+export type UpdatePrd = Partial<Omit<CreatePrd, "project_id">>;

@@ -29,8 +29,11 @@ export type {
   UpdateSession,
   CreateBilling,
   UpdateBilling,
+  CreatePrd,
+  UpdatePrd,
 } from "./types";
 export { ProjectRepo } from "./repositories/project.repo";
+export { PrdRepo } from "./repositories/prd.repo";
 export { PromptRepo } from "./repositories/prompt.repo";
 export { SessionRepo } from "./repositories/session.repo";
 export { BillingRepo } from "./repositories/billing.repo";
