@@ -7,6 +7,7 @@ export async function getDb(): Promise<Database> {
   if (dbInstance) return dbInstance;
 
   const db = await Database.load("sqlite:forge.db");
+  await db.execute("PRAGMA foreign_keys = ON;");
   await initSchema(db);
   dbInstance = db;
   return db;
