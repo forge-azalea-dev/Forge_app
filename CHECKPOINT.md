@@ -1,6 +1,6 @@
 # Forge Checkpoint
 
-Last updated: 2026-05-28 (Phase 4 implemented, pending smoke test)
+Last updated: 2026-05-28 (Phase 5 implemented, pending smoke test)
 
 ## Current Status
 
@@ -8,6 +8,7 @@ Last updated: 2026-05-28 (Phase 4 implemented, pending smoke test)
 - Phase 2 selesai: database layer SQLite via `@tauri-apps/plugin-sql`.
 - Phase 3 selesai: Billing page fully functional (CRUD + search + filter + seed data).
 - Phase 4 selesai: PRD Manager page fully functional (split panel, project CRUD + PRD upsert).
+- Phase 5 selesai: Progress Tracker page fully functional (pipeline bar, optimistic update, status filter).
 - Shared layout sudah terpasang (`components/Layout.tsx`) dengan:
   - sidebar navigation
   - topbar title + realtime timestamp (hydration-safe)
@@ -15,9 +16,9 @@ Last updated: 2026-05-28 (Phase 4 implemented, pending smoke test)
 - Pages functional:
   - `pages/billing/index.tsx` ← **functional** (Phase 3)
   - `pages/prd/index.tsx` ← **functional** (Phase 4)
+  - `pages/progress/index.tsx` ← **functional** (Phase 5)
 - Pages placeholder:
   - `pages/index.tsx`
-  - `pages/progress/index.tsx`
   - `pages/prompts/index.tsx`
   - `pages/sessions/index.tsx`
 - Design tokens + global styles sudah diterapkan di `styles/globals.css`.
@@ -26,7 +27,7 @@ Last updated: 2026-05-28 (Phase 4 implemented, pending smoke test)
 
 ## Latest Commit
 
-- Latest: `44895fb` — `fix: enable SQLite foreign key enforcement (PRAGMA foreign_keys = ON)`
+- Latest: `b5d4a09` — `feat: Progress Tracker page — filter tabs, grid, optimistic updates`
 - Phase 4: `d203607` — `feat: PRD Manager page — split panel, project list + PRD editor`
 - Phase 3: `12f8d52` — `feat: billing page fully functional — CRUD, search, filter, summary`
 
@@ -86,6 +87,23 @@ Capabilities saat ini (`src-tauri/capabilities/default.json`):
 "sql:allow-execute"  // INSERT, UPDATE, DELETE, CREATE TABLE
 ```
 
+## Progress Tracker Feature (Phase 5 — selesai)
+
+```
+hooks/
+└── useProgress.ts                 — filteredProjects, statusFilter, updatePhase/Status (optimistic)
+
+components/progress/
+├── PipelineBar.tsx                — 6-phase clickable bar (completed/active/upcoming states)
+└── ProjectProgressCard.tsx        — card: name, stack, status select, PipelineBar
+
+pages/progress/
+└── index.tsx                      — filter tabs (All/Active/Paused/Completed), 2-col grid, empty state
+```
+
+Optimistic update: local state diupdate dulu sebelum DB call. Rollback via `fetchProjects()` jika DB error.
+Status filter "Archived" tidak ada di tabs (archived projects tersembunyi dari tracker, intentional).
+
 ## PRD Manager Feature (Phase 4 — selesai)
 
 ```
@@ -114,12 +132,25 @@ Design: `key={selectedProject.id}` pada PRDEditor memaksa remount saat ganti pro
 `PRAGMA foreign_keys = ON` ditambah di `db.ts` agar `ON DELETE CASCADE` pada `prds.project_id` bekerja.
 Tanpa pragma ini, hapus project tidak akan cascade ke PRD terkait (SQLite default FK = OFF).
 
-## Phase 5 Candidates
+## Phase 6 Candidates
 
 Target fase berikutnya (belum ada spec):
 - Session Log — pages/sessions + SessionRepo
 - Prompt Vault — pages/prompts + PromptRepo
-- Progress Tracker — pages/progress + ProjectRepo
+
+## Smoke Test Checklist (Phase 5 — Progress Tracker)
+
+Jalankan `npx tauri dev` dari `d:\Forge-Lab\forge` lalu verifikasi:
+
+| Test | Expected |
+|------|----------|
+| Buka halaman Progress Tracker | Grid project cards muncul (atau empty state jika belum ada project) |
+| Klik tab "Active" | Hanya project active tampil |
+| Klik tab "All" | Semua project tampil kembali |
+| Klik fase di PipelineBar | Fase langsung ter-highlight (optimistic), DB tersimpan di background |
+| Klik completed phases (sebelum current) | Phases di-klik bisa mundur ke fase sebelumnya |
+| Ubah status via dropdown | Status badge langsung berubah warna (optimistic) |
+| Filter "Paused" setelah ubah status ke paused | Project muncul di tab Paused |
 
 ## Smoke Test Checklist (Phase 4 — PRD Manager)
 
