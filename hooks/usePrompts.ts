@@ -39,6 +39,7 @@ export function usePrompts(): UsePromptsReturn {
   }, [fetchPrompts]);
 
   const createPrompt = async (data: CreatePrompt): Promise<void> => {
+    setError(null);
     try {
       await PromptRepo.create(data);
       await fetchPrompts();
@@ -48,6 +49,7 @@ export function usePrompts(): UsePromptsReturn {
   };
 
   const updatePrompt = async (id: string, data: UpdatePrompt): Promise<void> => {
+    setError(null);
     try {
       await PromptRepo.update(id, data);
       await fetchPrompts();
@@ -57,6 +59,7 @@ export function usePrompts(): UsePromptsReturn {
   };
 
   const deletePrompt = async (id: string): Promise<void> => {
+    setError(null);
     setPrompts((prev) => prev.filter((p) => p.id !== id));
     try {
       await PromptRepo.delete(id);
@@ -67,6 +70,7 @@ export function usePrompts(): UsePromptsReturn {
   };
 
   const copyPrompt = async (id: string): Promise<void> => {
+    setError(null);
     const prompt = prompts.find((p) => p.id === id);
     if (!prompt) return;
     try {
