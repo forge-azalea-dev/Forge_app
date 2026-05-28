@@ -36,7 +36,7 @@ export function useSession(): UseSessionReturn {
       fetchSessions(),
       ProjectRepo.getAll()
         .then(setProjects)
-        .catch(() => {}),
+        .catch((err) => setError(err instanceof Error ? err.message : "Gagal memuat proyek")),
     ]).finally(() => setLoading(false));
   }, [fetchSessions]);
 
@@ -72,7 +72,7 @@ export function useSession(): UseSessionReturn {
   };
 
   const filteredSessions = sessions.filter(
-    (s) => projectFilter === "all" || s.project_id === projectFilter,
+    (s) => projectFilter === "all" || (s.project_id !== null && s.project_id === projectFilter),
   );
 
   return {
