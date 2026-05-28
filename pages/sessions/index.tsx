@@ -2,15 +2,9 @@ import { useState } from "react";
 import { useSession } from "@/hooks/useSession";
 import { SessionCard } from "@/components/sessions/SessionCard";
 import { SessionForm } from "@/components/sessions/SessionForm";
+import type { Session } from "@/lib/database";
 
-interface SessionFormData {
-  title: string;
-  project_id: string | null;
-  summary: string | null;
-  decisions: string | null;
-  next_steps: string | null;
-  duration: number | null;
-}
+type SessionFormData = Omit<import("@/lib/database").CreateSession, "started_at" | "ended_at">;
 
 export default function SessionLogPage() {
   const {
@@ -168,5 +162,3 @@ export default function SessionLogPage() {
     </div>
   );
 }
-
-type Session = import("@/lib/database").Session;
