@@ -1,6 +1,6 @@
 # Forge Checkpoint
 
-Last updated: 2026-05-29 (Phase 6 implemented, pending smoke test)
+Last updated: 2026-05-29 (Phase 7 implemented, pending smoke test)
 
 ## Current Status
 
@@ -10,6 +10,7 @@ Last updated: 2026-05-29 (Phase 6 implemented, pending smoke test)
 - Phase 4 selesai: PRD Manager page fully functional (split panel, project CRUD + PRD upsert).
 - Phase 5 selesai: Progress Tracker page fully functional (pipeline bar, optimistic update, status filter).
 - Phase 6 selesai: Prompt Vault page fully functional (CRUD + search + filter tabs + copy clipboard + use_count).
+- Phase 7 selesai: Session Log page fully functional (CRUD + expand/collapse detail + project filter + duration badge).
 - Shared layout sudah terpasang (`components/Layout.tsx`) dengan:
   - sidebar navigation
   - topbar title + realtime timestamp (hydration-safe)
@@ -19,19 +20,20 @@ Last updated: 2026-05-29 (Phase 6 implemented, pending smoke test)
   - `pages/prd/index.tsx` ← **functional** (Phase 4)
   - `pages/progress/index.tsx` ← **functional** (Phase 5)
   - `pages/prompts/index.tsx` ← **functional** (Phase 6)
+  - `pages/sessions/index.tsx` ← **functional** (Phase 7)
 - Pages placeholder:
   - `pages/index.tsx`
-  - `pages/sessions/index.tsx`
 - Design tokens + global styles sudah diterapkan di `styles/globals.css`.
 - Next static export sudah aktif di `next.config.ts` (`output: "export"` + `images.unoptimized: true`).
 - Tauri v2 sudah terinisialisasi (`src-tauri/*` sudah ada).
 
 ## Latest Commit
 
-- Latest: `c95904d` — `feat: Prompt Vault page — search, filter tabs, grid, copy clipboard, CRUD modal`
+- Latest: `37651fa` — `fix: include project_id in SessionRepo.update SQL and page update payload`
+- Phase 7: `2feb5c0` — `feat: Session Log page — timeline, project filter, CRUD modal, expand/collapse`
+- Phase 6: `c95904d` — `feat: Prompt Vault page — search, filter tabs, grid, copy clipboard, CRUD modal`
 - Phase 5: `b5d4a09` — `feat: Progress Tracker page — filter tabs, grid, optimistic updates`
 - Phase 4: `d203607` — `feat: PRD Manager page — split panel, project list + PRD editor`
-- Phase 3: `12f8d52` — `feat: billing page fully functional — CRUD, search, filter, summary`
 
 ## Database Layer (Phase 2 — selesai)
 
@@ -156,10 +158,59 @@ AI tool badge colors: claude=#C41E3A · chatgpt=#10A37F · ideogram=#6366F1 · s
 Copy to clipboard: `navigator.clipboard.writeText()` + `PromptRepo.incrementUseCount()` (optimistic).
 `setError(null)` di awal setiap mutation agar error bar tidak stale.
 
-## Phase 7 Candidates
+## Session Log Feature (Phase 7 — selesai)
+
+```
+hooks/
+└── useSession.ts                  — state: sessions, projects, projectFilter, loading, error
+                                     CRUD + optimistic delete + parallel load sessions+projects
+                                     client-side filter by project_id
+
+components/sessions/
+├── SessionCard.tsx                — card: title, duration badge ("Xh Ym"), project label,
+│                                    timestamp ("DD MMM YYYY • HH:mm" id-ID locale),
+│                                    2-line summary preview (collapsed),
+│                                    click → expand detail (summary + decisions + next_steps),
+│                                    hover edit/delete
+└── SessionForm.tsx                — modal: create/edit — title, project_id select, summary,
+                                     decisions, next_steps, duration (menit)
+
+pages/sessions/
+└── index.tsx                      — project filter dropdown, timeline list (space-y-3),
+                                     two-variant empty state, CRUD modal
+```
+
+`SessionRepo.update()` dipatch include `project_id` — project bisa di-reassign saat edit.
+`started_at` auto-set ke `new Date().toISOString()` saat create (tidak ada di form).
+`setError(null)` di awal setiap mutation agar error bar tidak stale.
+`SessionFormData` derived dari `Omit<CreateSession, "started_at" | "ended_at">`.
+
+## Phase 8 Candidates
 
 Target fase berikutnya (belum ada spec):
-- Session Log — `pages/sessions/index.tsx` + `SessionRepo`
+- Dashboard / Home — `pages/index.tsx` (summary stats, recent sessions, quick actions)
+- AI Integration — Anthropic API untuk generate PRD draft & summarize session
+
+## Smoke Test Checklist (Phase 7 — Session Log)
+
+Jalankan `npx tauri dev` dari `d:\Forge-Lab\forge` lalu verifikasi:
+
+| Test | Expected |
+|------|----------|
+| Buka halaman Session Log | Empty state "Belum ada sesi" + hint text |
+| Klik "+ New Session" | Modal terbuka (judul "New Session") |
+| Isi title saja → "Add Session" | Sesi muncul di timeline, modal tutup |
+| Isi semua field termasuk duration 90 → "Add Session" | Card tampil dengan badge "1h 30m" |
+| Klik card | Detail expand — summary, decisions, next_steps tampil |
+| Klik card lagi | Collapse — kembali ke 2-line preview |
+| Card tanpa summary/decisions/next_steps | Tidak ada "▼ detail" indicator |
+| Hover card → klik Pencil | Edit modal terbuka dengan data existing (judul "Edit Session") |
+| Edit title + ganti project → "Save Changes" | Title dan project terupdate di card |
+| Hover card → klik Trash | Confirm "Hapus sesi ini?" → sesi terhapus |
+| Pilih project di dropdown filter | Hanya sesi untuk project itu tampil |
+| Filter project tanpa sesi | Empty state "Belum ada sesi untuk [project]" |
+| Pilih "Semua Project" | Semua sesi tampil kembali |
+| Timestamp format | "DD MMM YYYY • HH:mm" (contoh: "29 Mei 2026 • 14:30") |
 
 ## Smoke Test Checklist (Phase 6 — Prompt Vault)
 
