@@ -1,14 +1,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 
-interface SessionFormData {
-  title: string;
-  project_id: string | null;
-  summary: string | null;
-  decisions: string | null;
-  next_steps: string | null;
-  duration: number | null;
-}
+type SessionFormData = Omit<import("@/lib/database").CreateSession, "started_at" | "ended_at">;
 
 interface SessionFormProps {
   initial: Session | null;
@@ -52,9 +45,8 @@ export function SessionForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    const durationNum = durationInput.trim()
-      ? Number(durationInput.trim())
-      : null;
+    const parsed = parseInt(durationInput.trim(), 10);
+    const durationNum = Number.isFinite(parsed) && parsed > 0 ? parsed : null;
     setSubmitting(true);
     try {
       await onSubmit({
@@ -63,7 +55,7 @@ export function SessionForm({
         summary: summary.trim() || null,
         decisions: decisions.trim() || null,
         next_steps: nextSteps.trim() || null,
-        duration: durationNum && durationNum > 0 ? durationNum : null,
+        duration: durationNum,
       });
     } finally {
       setSubmitting(false);
@@ -90,6 +82,7 @@ export function SessionForm({
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close"
             className="rounded p-1 text-[#666666] hover:text-[#F0F0F0] transition-colors"
           >
             <X size={16} />
