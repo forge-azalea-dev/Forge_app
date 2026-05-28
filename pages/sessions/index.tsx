@@ -41,6 +41,7 @@ export default function SessionLogPage() {
     if (editTarget) {
       await updateSession(editTarget.id, {
         title: data.title,
+        project_id: data.project_id,
         summary: data.summary,
         decisions: data.decisions,
         next_steps: data.next_steps,

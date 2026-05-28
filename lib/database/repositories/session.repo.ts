@@ -63,9 +63,10 @@ export const SessionRepo = {
     const updated = { ...existing, ...data };
 
     await db.execute(
-      `UPDATE sessions SET title=$1, summary=$2, decisions=$3, next_steps=$4, duration=$5, ended_at=$6
-       WHERE id=$7`,
+      `UPDATE sessions SET project_id=$1, title=$2, summary=$3, decisions=$4, next_steps=$5, duration=$6, ended_at=$7
+       WHERE id=$8`,
       [
+        updated.project_id,
         updated.title,
         updated.summary,
         updated.decisions,
