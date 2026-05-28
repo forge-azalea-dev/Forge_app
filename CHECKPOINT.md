@@ -1,6 +1,6 @@
 # Forge Checkpoint
 
-Last updated: 2026-05-28 (Phase 5 implemented, pending smoke test)
+Last updated: 2026-05-29 (Phase 6 implemented, pending smoke test)
 
 ## Current Status
 
@@ -9,6 +9,7 @@ Last updated: 2026-05-28 (Phase 5 implemented, pending smoke test)
 - Phase 3 selesai: Billing page fully functional (CRUD + search + filter + seed data).
 - Phase 4 selesai: PRD Manager page fully functional (split panel, project CRUD + PRD upsert).
 - Phase 5 selesai: Progress Tracker page fully functional (pipeline bar, optimistic update, status filter).
+- Phase 6 selesai: Prompt Vault page fully functional (CRUD + search + filter tabs + copy clipboard + use_count).
 - Shared layout sudah terpasang (`components/Layout.tsx`) dengan:
   - sidebar navigation
   - topbar title + realtime timestamp (hydration-safe)
@@ -17,9 +18,9 @@ Last updated: 2026-05-28 (Phase 5 implemented, pending smoke test)
   - `pages/billing/index.tsx` ← **functional** (Phase 3)
   - `pages/prd/index.tsx` ← **functional** (Phase 4)
   - `pages/progress/index.tsx` ← **functional** (Phase 5)
+  - `pages/prompts/index.tsx` ← **functional** (Phase 6)
 - Pages placeholder:
   - `pages/index.tsx`
-  - `pages/prompts/index.tsx`
   - `pages/sessions/index.tsx`
 - Design tokens + global styles sudah diterapkan di `styles/globals.css`.
 - Next static export sudah aktif di `next.config.ts` (`output: "export"` + `images.unoptimized: true`).
@@ -27,7 +28,8 @@ Last updated: 2026-05-28 (Phase 5 implemented, pending smoke test)
 
 ## Latest Commit
 
-- Latest: `b5d4a09` — `feat: Progress Tracker page — filter tabs, grid, optimistic updates`
+- Latest: `c95904d` — `feat: Prompt Vault page — search, filter tabs, grid, copy clipboard, CRUD modal`
+- Phase 5: `b5d4a09` — `feat: Progress Tracker page — filter tabs, grid, optimistic updates`
 - Phase 4: `d203607` — `feat: PRD Manager page — split panel, project list + PRD editor`
 - Phase 3: `12f8d52` — `feat: billing page fully functional — CRUD, search, filter, summary`
 
@@ -132,11 +134,51 @@ Design: `key={selectedProject.id}` pada PRDEditor memaksa remount saat ganti pro
 `PRAGMA foreign_keys = ON` ditambah di `db.ts` agar `ON DELETE CASCADE` pada `prds.project_id` bekerja.
 Tanpa pragma ini, hapus project tidak akan cascade ke PRD terkait (SQLite default FK = OFF).
 
-## Phase 6 Candidates
+## Prompt Vault Feature (Phase 6 — selesai)
+
+```
+hooks/
+└── usePrompts.ts                  — state: prompts, toolFilter, searchQuery, loading, error
+                                     CRUD + copyPrompt (clipboard + optimistic use_count)
+                                     client-side filter by tool AND search
+
+components/prompts/
+├── PromptCard.tsx                 — card: title, ai_tool badge (warna per tool), category,
+│                                    2-line content preview, use_count + last_used footer,
+│                                    click-to-copy flash ("Copied!"), hover edit/delete
+└── PromptForm.tsx                 — modal: create/edit — title, content, ai_tool select, category
+
+pages/prompts/
+└── index.tsx                      — search bar, filter tabs (All + 6 tools), 3-col grid, empty state
+```
+
+AI tool badge colors: claude=#C41E3A · chatgpt=#10A37F · ideogram=#6366F1 · stitch=#F59E0B · cursor=#3B82F6 · custom=#666666
+Copy to clipboard: `navigator.clipboard.writeText()` + `PromptRepo.incrementUseCount()` (optimistic).
+`setError(null)` di awal setiap mutation agar error bar tidak stale.
+
+## Phase 7 Candidates
 
 Target fase berikutnya (belum ada spec):
-- Session Log — pages/sessions + SessionRepo
-- Prompt Vault — pages/prompts + PromptRepo
+- Session Log — `pages/sessions/index.tsx` + `SessionRepo`
+
+## Smoke Test Checklist (Phase 6 — Prompt Vault)
+
+Jalankan `npx tauri dev` dari `d:\Forge-Lab\forge` lalu verifikasi:
+
+| Test | Expected |
+|------|----------|
+| Buka halaman Prompt Vault | Empty state "Belum ada prompt" |
+| Klik "+ Add Prompt" | Modal PromptForm terbuka (judul "New Prompt") |
+| Isi title + content + pilih AI tool → "Add Prompt" | Prompt muncul di grid, modal tutup |
+| Klik card prompt | Flash "Copied!" muncul sebentar, konten ter-copy ke clipboard |
+| Cek use_count setelah klik | Counter bertambah (×1 used → ×2 used dst) |
+| Ketik di search box | Grid filter realtime by title/content |
+| Klik tab "Claude" | Hanya prompt claude tampil |
+| Klik tab "All" | Semua prompt tampil kembali |
+| Hover card → klik Pencil | Modal edit terbuka dengan data existing (judul "Edit Prompt") |
+| Edit data → "Save Changes" | Data terupdate di grid |
+| Hover card → klik Trash | Confirm dialog → prompt terhapus |
+| Tambah prompt untuk tool berbeda | Badge warna berbeda sesuai tool |
 
 ## Smoke Test Checklist (Phase 5 — Progress Tracker)
 
