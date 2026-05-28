@@ -9,7 +9,7 @@ interface SessionCardProps {
 }
 
 function formatDuration(minutes: number | null): string | null {
-  if (!minutes || minutes <= 0) return null;
+  if (minutes === null || minutes <= 0) return null;
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   if (h === 0) return `${m}m`;
@@ -19,6 +19,7 @@ function formatDuration(minutes: number | null): string | null {
 
 function formatTimestamp(iso: string): string {
   const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
   const day = String(d.getDate()).padStart(2, "0");
   const month = d.toLocaleString("id-ID", { month: "short" });
   const year = d.getFullYear();
@@ -137,12 +138,14 @@ export function SessionCard({
         </div>
       )}
 
-      {/* Expand/collapse indicator */}
-      <div className="flex justify-end pt-0.5">
-        <span className="font-mono text-[9px] text-[#444444]">
-          {expanded ? "▲ tutup" : "▼ detail"}
-        </span>
-      </div>
+      {/* Expand/collapse indicator — only when there is content to show */}
+      {(session.summary || session.decisions || session.next_steps) && (
+        <div className="flex justify-end pt-0.5">
+          <span className="font-mono text-[9px] text-[#444444]">
+            {expanded ? "▲ tutup" : "▼ detail"}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
