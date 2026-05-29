@@ -1,3 +1,5 @@
+import { InsightCard } from "@/components/InsightCard";
+
 const CARD_GAP_CLASS = "grid gap-4 md:gap-6";
 
 const cardBaseClasses =
@@ -97,6 +99,8 @@ export default function DashboardPage() {
           </div>
         </article>
       </section>
+
+      <InsightCard />
     </div>
   );
 }
