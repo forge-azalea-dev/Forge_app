@@ -1,6 +1,6 @@
 # Forge Checkpoint
 
-Last updated: 2026-05-30 (Auto-updater + GitHub Release pipeline selesai)
+Last updated: 2026-05-30 (Phase 10: Tech Stack Manager + Todo List selesai)
 
 ## Current Status
 
@@ -17,6 +17,7 @@ Last updated: 2026-05-30 (Auto-updater + GitHub Release pipeline selesai)
 - Phase 8c selesai: Dashboard AI Insights — "✨ Generate Insights" button + InsightCard component + markdown renderer.
 - Phase 8d selesai: AI Summarize per Session Card — per-card "✨ Summarize" button, inline AI RINGKASAN panel, dismissable error.
 - Phase 9 selesai: Polish & Bug Fix — dashboard live data, form accessibility, consistent spacing.
+- Phase 10 selesai: Tech Stack Manager + Todo List — StackSelector per-category badges, todos table + TodoRepo, useTodos hook, Todos page (split-panel, filter, CRUD, optimistic update).
 - Production Build v0.1.0 selesai: Windows installer (.msi + .exe) berhasil di-generate.
 - Branding: sidebar subtitle diubah dari "DEV WORKFLOW" → "Azalea_Dev WorkFlow" (`components/Layout.tsx:161`).
 - Skeleton UI: shimmer animation (`#1A1A1A` → `#222222`) — `components/Skeleton.tsx` + semua loading states di-replace dari "Memuat..." teks.
@@ -24,7 +25,7 @@ Last updated: 2026-05-30 (Auto-updater + GitHub Release pipeline selesai)
 - GitHub repo: `https://github.com/forge-azalea-dev/Forge_app` (public).
 - CI/CD: GitHub Actions release workflow — trigger `v*` tag → build → sign → upload installer + `latest.json`.
 - Shared layout sudah terpasang (`components/Layout.tsx`) dengan:
-  - sidebar navigation (Dashboard, PRD, Progress, Prompts, Sessions, AI Chat, Billing, Settings)
+  - sidebar navigation (Dashboard, PRD, Progress, Prompts, Sessions, Todo List, AI Chat, Billing, Settings)
   - topbar title + realtime timestamp (hydration-safe)
   - logo dari `public/forge-logo.png`
 - Pages functional:
@@ -35,6 +36,7 @@ Last updated: 2026-05-30 (Auto-updater + GitHub Release pipeline selesai)
   - `pages/sessions/index.tsx` ← **functional** (Phase 7)
   - `pages/settings/index.tsx` ← **functional** (Phase 8a)
   - `pages/chat/index.tsx` ← **functional** (Phase 8b)
+  - `pages/todos/index.tsx` ← **functional** (Phase 10)
 - Pages functional:
   - `pages/index.tsx` ← **functional** (Phase 8c — AI Insights)
 - Design tokens + global styles sudah diterapkan di `styles/globals.css`.
@@ -43,6 +45,11 @@ Last updated: 2026-05-30 (Auto-updater + GitHub Release pipeline selesai)
 
 ## Latest Commit
 
+- Phase 10: `6e486db` — `feat: add Todo List page with per-project todos and nav item`
+- Phase 10: `a1b690d` — `feat: add todos table, types, and TodoRepo`
+- Phase 10: `de47a59` — `feat: add StackSelector component with per-category badge UI`
+- Fix: `1042561` — `fix: import UpdaterExt trait for updater() method in lib.rs`
+- v0.1.1: `c5844b1` — `chore: bump version to 0.1.1 — logo & subtitle size increase`
 - Auto-updater: `9c225a6` — `ci: remove empty password secret from release workflow`
 - Auto-updater: `e859b5d` — `feat: setup auto-updater with GitHub Releases`
 - Skeleton UI: `83a25fc` — `feat: replace loading text with shimmer skeleton UI`
@@ -78,7 +85,8 @@ lib/
         ├── billing.repo.ts
         ├── project.repo.ts
         ├── prompt.repo.ts
-        └── session.repo.ts
+        ├── session.repo.ts
+        └── todo.repo.ts
 ```
 
 ## Billing Feature (Phase 3 — selesai)
@@ -438,7 +446,55 @@ Layout sudah `px-6 py-4` di main content area — pages tidak perlu tambah paddi
 | DevTools Accessibility tab | Tidak ada warning "Label has no associated form field" |
 | Semua pages (Sessions, Progress, Prompts) | Spacing antar section konsisten |
 
-## Phase 10 Candidates
+## Tech Stack Manager (Phase 10 — selesai)
+
+```
+lib/database/
+└── stack-presets.ts       — STACK_CATEGORIES, CATEGORY_LABELS, STACK_PRESETS
+                             parseStack(), stringifyStack(), emptyStack() helpers
+
+components/prd/
+└── StackSelector.tsx      — per-category badge UI: show selected items, × remove,
+                             "+" dropdown with presets + "Custom..." option,
+                             outside-click dismiss, only one dropdown open at a time
+```
+
+Stack stored as JSON string in `projects.stack` field (existing column, backward-compatible).
+Format: `{ "language": ["TypeScript"], "frontend": ["Next.js"], ... }`.
+`PRDEditor` now uses `StackSelector` instead of plain text input.
+`handleGenerate` formats stack as readable string (`language: TypeScript | frontend: Next.js`) for AI prompt.
+
+## Todo List Feature (Phase 10 — selesai)
+
+```
+lib/database/
+├── schema.ts              — todos table added (CASCADE FK → projects)
+├── types.ts               — Todo, CreateTodo, UpdateTodo interfaces
+└── repositories/
+    └── todo.repo.ts       — getByProject, getById, create, update, delete, toggleStatus
+
+hooks/
+└── useTodos.ts            — state: todos, filteredTodos, projects, selectedProjectId
+                             statusFilter (all/pending/in_progress/done)
+                             optimistic toggleStatus + optimistic deleteTodo
+                             createProject exposed for inline project add
+                             StatusFilter exported type
+
+pages/todos/
+└── index.tsx              — split panel: left (200px) project list + right todos panel
+                             filter tabs: All / Pending / In Progress / Done
+                             todo cards: checkbox toggle, priority badge (high/medium/low),
+                             due date (red if overdue + not done), hover edit/delete
+                             inline add/edit form (no modal library)
+                             SkeletonList loading state + two empty states
+```
+
+Nav item "Todo List" with CheckSquare icon added in `components/Layout.tsx` (between Sessions and AI Chat).
+
+`toggleStatus` cycle: pending → in_progress → done → pending.
+`STATUS_CYCLE` Record map used in both hook (optimistic) and TodoRepo (DB).
+
+## Phase 11 Candidates
 
 Target fase berikutnya (belum ada spec):
 - UI/UX Notes page — link Figma/Stitch + design decision notes per project
