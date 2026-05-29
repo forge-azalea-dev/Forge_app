@@ -3,6 +3,14 @@ import { useChat } from "@/hooks/useChat";
 import { ProjectRepo } from "@/lib/database";
 import type { Project } from "@/lib/database";
 
+function formatTimestamp(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function ChatPage() {
   const {
     messages,
@@ -42,14 +50,6 @@ export default function ChatPage() {
     }
   };
 
-  function formatTimestamp(iso: string): string {
-    const d = new Date(iso);
-    return d.toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
-
   return (
     <div className="flex h-[calc(100vh-3rem-2rem)] flex-col">
       {/* Header */}
@@ -87,7 +87,7 @@ export default function ChatPage() {
         )}
 
         {/* Empty state */}
-        {messages.length === 0 && !isLoading && isConfigured && (
+        {messages.length === 0 && !isLoading && isConfigured && !error && (
           <div className="flex h-full flex-col items-center justify-center py-16 text-center">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-[8px] border border-[rgba(139,0,0,0.25)] bg-[rgba(139,0,0,0.08)]">
               <span className="font-mono text-lg font-bold text-[rgba(139,0,0,0.6)]">F</span>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useAI } from "@/hooks/useAI";
 import {
   ProjectRepo,
@@ -25,6 +25,9 @@ export interface UseChatReturn {
   clearChat: () => void;
 }
 
+const MAX_HISTORY_MESSAGES = 10;
+const MAX_CONTEXT_SESSIONS = 3;
+
 async function buildContext(projectId: string | null): Promise<string> {
   const parts: string[] = [];
 
@@ -47,7 +50,7 @@ async function buildContext(projectId: string | null): Promise<string> {
   }
 
   const sessions = await SessionRepo.getAll();
-  const recentSessions = sessions.slice(0, 3);
+  const recentSessions = sessions.slice(0, MAX_CONTEXT_SESSIONS);
   if (recentSessions.length === 0) {
     parts.push("Tidak ada session log.");
   } else {
@@ -72,43 +75,52 @@ export function useChat(): UseChatReturn {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [errorCleared, setErrorCleared] = useState(false);
 
+  const messagesRef = useRef<Message[]>([]);
+  messagesRef.current = messages;
+  const generatingRef = useRef(false);
+
   const sendMessage = async (content: string): Promise<void> => {
-    setErrorCleared(false);
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content,
-      timestamp: new Date().toISOString(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-
-    // Build conversation history from last 10 messages before this new one
-    const currentMessages = messages;
-    const historyMessages = currentMessages.slice(-10);
-    const conversationHistory = historyMessages
-      .map((m) => (m.role === "user" ? `User: ${m.content}` : `Assistant: ${m.content}`))
-      .join("\n");
-
-    const context = await buildContext(selectedProjectId);
-
-    const systemPrompt = `Kamu adalah AI assistant untuk developer bernama Tuan Muda.\nKamu punya akses ke data workflow Forge miliknya.\n\nDATA CONTEXT:\n${context}\n\nJawab dalam Bahasa Indonesia. Ringkas tapi informatif.\nKalau ditanya tentang project, gunakan data di atas.\nKalau tidak ada context yang relevan, jawab berdasarkan pengetahuan umum.`;
-
-    const userPrompt =
-      conversationHistory.length > 0
-        ? `${conversationHistory}\n\nUser: ${content}`
-        : content;
-
-    const result = await generate(systemPrompt, userPrompt);
-
-    if (result !== "") {
-      const assistantMessage: Message = {
+    if (generatingRef.current) return;
+    generatingRef.current = true;
+    try {
+      setErrorCleared(false);
+      const userMessage: Message = {
         id: crypto.randomUUID(),
-        role: "assistant",
-        content: result,
+        role: "user",
+        content,
         timestamp: new Date().toISOString(),
       };
-      setMessages((prev) => [...prev, assistantMessage]);
+
+      setMessages((prev) => [...prev, userMessage]);
+
+      // Build conversation history from last MAX_HISTORY_MESSAGES messages before this new one
+      const historyMessages = messagesRef.current.slice(-MAX_HISTORY_MESSAGES);
+      const conversationHistory = historyMessages
+        .map((m) => (m.role === "user" ? `User: ${m.content}` : `Assistant: ${m.content}`))
+        .join("\n");
+
+      const context = await buildContext(selectedProjectId);
+
+      const systemPrompt = `Kamu adalah AI assistant untuk developer bernama Tuan Muda.\nKamu punya akses ke data workflow Forge miliknya.\n\nDATA CONTEXT:\n${context}\n\nJawab dalam Bahasa Indonesia. Ringkas tapi informatif.\nKalau ditanya tentang project, gunakan data di atas.\nKalau tidak ada context yang relevan, jawab berdasarkan pengetahuan umum.`;
+
+      const userPrompt =
+        conversationHistory.length > 0
+          ? `${conversationHistory}\n\nUser: ${content}`
+          : content;
+
+      const result = await generate(systemPrompt, userPrompt);
+
+      if (result !== "") {
+        const assistantMessage: Message = {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: result,
+          timestamp: new Date().toISOString(),
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+      }
+    } finally {
+      generatingRef.current = false;
     }
   };
 
