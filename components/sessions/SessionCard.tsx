@@ -1,11 +1,26 @@
 import { useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
+import { useAI } from "@/hooks/useAI";
 
 interface SessionCardProps {
   session: Session;
   projectName: string | null;
   onEdit: (session: Session) => void;
   onDelete: (id: string) => void;
+}
+
+const SYSTEM_PROMPT =
+  "You are a developer productivity assistant. Summarize this work session concisely in Bahasa Indonesia.\nFocus on what was accomplished, key decisions, and what comes next.\nMax 80 words. Be practical and direct.";
+
+function buildSummarizePrompt(session: Session, projectName: string | null): string {
+  const lines: string[] = [`SESSION: ${session.title}`];
+  if (projectName !== null) lines.push(`Project: ${projectName}`);
+  if (session.duration !== null) lines.push(`Durasi: ${session.duration} menit`);
+  if (session.summary) lines.push(`Catatan: ${session.summary}`);
+  if (session.decisions) lines.push(`Decisions: ${session.decisions}`);
+  if (session.next_steps) lines.push(`Next Steps: ${session.next_steps}`);
+  lines.push("\nGenerate ringkasan sesi ini.");
+  return lines.join("\n");
 }
 
 function formatDuration(minutes: number | null): string | null {
@@ -35,7 +50,20 @@ export function SessionCard({
   onDelete,
 }: SessionCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const { isConfigured, isLoading: isGenerating, error: aiError, generate } = useAI();
   const duration = formatDuration(session.duration);
+
+  const handleSummarize = async () => {
+    if (!isConfigured || isGenerating) return;
+    setAiSummary(null);
+    try {
+      const result = await generate(SYSTEM_PROMPT, buildSummarizePrompt(session, projectName));
+      if (result) setAiSummary(result);
+    } catch (err) {
+      console.error("Summarize failed:", err);
+    }
+  };
 
   return (
     <div
@@ -44,6 +72,24 @@ export function SessionCard({
     >
       {/* Hover actions */}
       <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {isConfigured && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSummarize();
+            }}
+            disabled={isGenerating}
+            className="p-1.5 rounded text-[#666666] hover:text-[#C41E3A] hover:bg-[rgba(139,0,0,0.1)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            title="Summarize with AI"
+          >
+            {isGenerating ? (
+              <span className="block h-3 w-3 animate-spin rounded-full border border-[#C41E3A] border-t-transparent" />
+            ) : (
+              <span className="font-mono text-[10px]">✨</span>
+            )}
+          </button>
+        )}
         <button
           type="button"
           onClick={(e) => {
@@ -136,6 +182,43 @@ export function SessionCard({
             </p>
           )}
         </div>
+      )}
+
+      {/* AI summary panel */}
+      {aiSummary !== null && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="mt-1 rounded-[4px] border border-[rgba(139,0,0,0.2)] bg-[rgba(139,0,0,0.06)] px-3 py-2 space-y-1"
+        >
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[9px] uppercase tracking-wider text-[#555555]">
+              AI RINGKASAN
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setAiSummary(null);
+              }}
+              className="font-mono text-[9px] text-[#555555] hover:text-[#F0F0F0] transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+          <p className="font-mono text-[11px] text-[#AAAAAA] leading-relaxed whitespace-pre-wrap">
+            {aiSummary}
+          </p>
+        </div>
+      )}
+
+      {/* AI error panel */}
+      {aiError !== null && (
+        <p
+          onClick={(e) => e.stopPropagation()}
+          className="font-mono text-[10px] text-[#C41E3A] mt-1"
+        >
+          {aiError}
+        </p>
       )}
 
       {/* Expand/collapse indicator — only when there is content to show */}
