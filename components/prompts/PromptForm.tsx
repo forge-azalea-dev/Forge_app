@@ -82,10 +82,11 @@ export function PromptForm({ initial, onSubmit, onClose }: PromptFormProps) {
         <form onSubmit={handleSubmit} className="space-y-3">
           {/* Title */}
           <div>
-            <label className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
+            <label htmlFor="prompt-title" className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
               Title
             </label>
             <input
+              id="prompt-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -98,10 +99,11 @@ export function PromptForm({ initial, onSubmit, onClose }: PromptFormProps) {
           {/* AI Tool + Category row */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
+              <label htmlFor="prompt-ai-tool" className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
                 AI Tool
               </label>
               <select
+                id="prompt-ai-tool"
                 value={aiTool}
                 onChange={(e) => setAiTool(e.target.value as AiTool)}
                 className="w-full rounded-[4px] border border-[rgba(139,0,0,0.25)] bg-[#0A0A0A] px-3 py-2 font-mono text-xs text-[#F0F0F0] outline-none focus:border-[#C41E3A] transition-colors"
@@ -114,10 +116,11 @@ export function PromptForm({ initial, onSubmit, onClose }: PromptFormProps) {
               </select>
             </div>
             <div>
-              <label className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
+              <label htmlFor="prompt-category" className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
                 Category
               </label>
               <input
+                id="prompt-category"
                 type="text"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -129,10 +132,11 @@ export function PromptForm({ initial, onSubmit, onClose }: PromptFormProps) {
 
           {/* Content */}
           <div>
-            <label className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
+            <label htmlFor="prompt-content" className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
               Content
             </label>
             <textarea
+              id="prompt-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Isi prompt..."

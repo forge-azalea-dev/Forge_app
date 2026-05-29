@@ -148,8 +148,9 @@ Generate PRD untuk project ini.`;
       <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
         {/* Project Name */}
         <div>
-          <label className={LABEL_CLASS}>Project Name</label>
+          <label htmlFor="prd-project-name" className={LABEL_CLASS}>Project Name</label>
           <input
+            id="prd-project-name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -160,8 +161,9 @@ Generate PRD untuk project ini.`;
 
         {/* PRD Title */}
         <div>
-          <label className={LABEL_CLASS}>Judul PRD</label>
+          <label htmlFor="prd-title" className={LABEL_CLASS}>Judul PRD</label>
           <input
+            id="prd-title"
             type="text"
             value={prdTitle}
             onChange={(e) => setPrdTitle(e.target.value)}
@@ -173,8 +175,9 @@ Generate PRD untuk project ini.`;
         {/* Stack + Phase */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={LABEL_CLASS}>Tech Stack</label>
+            <label htmlFor="prd-stack" className={LABEL_CLASS}>Tech Stack</label>
             <input
+              id="prd-stack"
               type="text"
               value={stack}
               onChange={(e) => setStack(e.target.value)}
@@ -183,8 +186,9 @@ Generate PRD untuk project ini.`;
             />
           </div>
           <div>
-            <label className={LABEL_CLASS}>Phase</label>
+            <label htmlFor="prd-phase" className={LABEL_CLASS}>Phase</label>
             <select
+              id="prd-phase"
               value={phase}
               onChange={(e) => setPhase(e.target.value as Phase)}
               className={INPUT_CLASS}
@@ -201,8 +205,9 @@ Generate PRD untuk project ini.`;
         {/* Status + Figma URL */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={LABEL_CLASS}>Status</label>
+            <label htmlFor="prd-status" className={LABEL_CLASS}>Status</label>
             <select
+              id="prd-status"
               value={status}
               onChange={(e) => setStatus(e.target.value as ProjectStatus)}
               className={INPUT_CLASS}
@@ -215,8 +220,9 @@ Generate PRD untuk project ini.`;
             </select>
           </div>
           <div>
-            <label className={LABEL_CLASS}>Figma URL</label>
+            <label htmlFor="prd-figma-url" className={LABEL_CLASS}>Figma URL</label>
             <input
+              id="prd-figma-url"
               type="text"
               value={figmaUrl}
               onChange={(e) => setFigmaUrl(e.target.value)}
@@ -228,8 +234,9 @@ Generate PRD untuk project ini.`;
 
         {/* Repo URL */}
         <div>
-          <label className={LABEL_CLASS}>Repo URL</label>
+          <label htmlFor="prd-repo-url" className={LABEL_CLASS}>Repo URL</label>
           <input
+            id="prd-repo-url"
             type="text"
             value={repoUrl}
             onChange={(e) => setRepoUrl(e.target.value)}
@@ -240,8 +247,9 @@ Generate PRD untuk project ini.`;
 
         {/* Description */}
         <div>
-          <label className={LABEL_CLASS}>Deskripsi Project</label>
+          <label htmlFor="prd-description" className={LABEL_CLASS}>Deskripsi Project</label>
           <textarea
+            id="prd-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className={`${INPUT_CLASS} h-20 resize-none`}
@@ -251,8 +259,9 @@ Generate PRD untuk project ini.`;
 
         {/* PRD Content */}
         <div>
-          <label className={LABEL_CLASS}>Konten PRD</label>
+          <label htmlFor="prd-content" className={LABEL_CLASS}>Konten PRD</label>
           <textarea
+            id="prd-content"
             value={prdContent}
             onChange={(e) => setPrdContent(e.target.value)}
             className={`${INPUT_CLASS} h-64 resize-none`}

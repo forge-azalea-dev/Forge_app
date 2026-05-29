@@ -92,10 +92,11 @@ export function SessionForm({
         <form onSubmit={handleSubmit} className="space-y-3">
           {/* Title */}
           <div>
-            <label className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
+            <label htmlFor="session-title" className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
               Title
             </label>
             <input
+              id="session-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -108,10 +109,11 @@ export function SessionForm({
           {/* Project + Duration row */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
+              <label htmlFor="session-project" className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
                 Project
               </label>
               <select
+                id="session-project"
                 value={projectId ?? ""}
                 onChange={(e) =>
                   setProjectId(e.target.value || null)
@@ -129,10 +131,11 @@ export function SessionForm({
               </select>
             </div>
             <div>
-              <label className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
+              <label htmlFor="session-duration" className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
                 Duration (menit)
               </label>
               <input
+                id="session-duration"
                 type="number"
                 min="1"
                 value={durationInput}
@@ -145,10 +148,11 @@ export function SessionForm({
 
           {/* Summary */}
           <div>
-            <label className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
+            <label htmlFor="session-summary" className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
               Summary
             </label>
             <textarea
+              id="session-summary"
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               placeholder="Ringkasan sesi..."
@@ -159,10 +163,11 @@ export function SessionForm({
 
           {/* Decisions */}
           <div>
-            <label className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
+            <label htmlFor="session-decisions" className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
               Decisions
             </label>
             <textarea
+              id="session-decisions"
               value={decisions}
               onChange={(e) => setDecisions(e.target.value)}
               placeholder="Keputusan penting..."
@@ -173,10 +178,11 @@ export function SessionForm({
 
           {/* Next Steps */}
           <div>
-            <label className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
+            <label htmlFor="session-next-steps" className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-[#666666]">
               Next Steps
             </label>
             <textarea
+              id="session-next-steps"
               value={nextSteps}
               onChange={(e) => setNextSteps(e.target.value)}
               placeholder="Follow-up atau langkah berikutnya..."

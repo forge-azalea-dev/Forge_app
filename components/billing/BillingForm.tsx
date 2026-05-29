@@ -102,8 +102,9 @@ export function BillingForm({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name */}
           <div>
-            <label className={LABEL_CLASS}>Name *</label>
+            <label htmlFor="billing-name" className={LABEL_CLASS}>Name *</label>
             <input
+              id="billing-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -115,8 +116,9 @@ export function BillingForm({
           {/* Amount + Currency */}
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
-              <label className={LABEL_CLASS}>Amount *</label>
+              <label htmlFor="billing-amount" className={LABEL_CLASS}>Amount *</label>
               <input
+                id="billing-amount"
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
@@ -127,8 +129,9 @@ export function BillingForm({
               />
             </div>
             <div>
-              <label className={LABEL_CLASS}>Currency</label>
+              <label htmlFor="billing-currency" className={LABEL_CLASS}>Currency</label>
               <select
+                id="billing-currency"
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
                 className={INPUT_CLASS}
@@ -145,8 +148,9 @@ export function BillingForm({
           {/* Cycle + Billing Date */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={LABEL_CLASS}>Cycle</label>
+              <label htmlFor="billing-cycle" className={LABEL_CLASS}>Cycle</label>
               <select
+                id="billing-cycle"
                 value={cycle}
                 onChange={(e) => setCycle(e.target.value)}
                 className={INPUT_CLASS}
@@ -159,8 +163,9 @@ export function BillingForm({
               </select>
             </div>
             <div>
-              <label className={LABEL_CLASS}>Billing Date *</label>
+              <label htmlFor="billing-date" className={LABEL_CLASS}>Billing Date *</label>
               <input
+                id="billing-date"
                 type="number"
                 value={billingDate}
                 onChange={(e) => setBillingDate(e.target.value)}
@@ -173,8 +178,9 @@ export function BillingForm({
 
           {/* Status */}
           <div>
-            <label className={LABEL_CLASS}>Status</label>
+            <label htmlFor="billing-status" className={LABEL_CLASS}>Status</label>
             <select
+              id="billing-status"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
               className={INPUT_CLASS}
@@ -190,8 +196,9 @@ export function BillingForm({
           {/* Category + URL */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={LABEL_CLASS}>Category</label>
+              <label htmlFor="billing-category" className={LABEL_CLASS}>Category</label>
               <input
+                id="billing-category"
                 type="text"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -200,8 +207,9 @@ export function BillingForm({
               />
             </div>
             <div>
-              <label className={LABEL_CLASS}>URL</label>
+              <label htmlFor="billing-url" className={LABEL_CLASS}>URL</label>
               <input
+                id="billing-url"
                 type="text"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
@@ -213,8 +221,9 @@ export function BillingForm({
 
           {/* Description */}
           <div>
-            <label className={LABEL_CLASS}>Description</label>
+            <label htmlFor="billing-description" className={LABEL_CLASS}>Description</label>
             <textarea
+              id="billing-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className={`${INPUT_CLASS} resize-none h-16`}
@@ -224,8 +233,9 @@ export function BillingForm({
 
           {/* Notes */}
           <div>
-            <label className={LABEL_CLASS}>Notes</label>
+            <label htmlFor="billing-notes" className={LABEL_CLASS}>Notes</label>
             <textarea
+              id="billing-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className={`${INPUT_CLASS} resize-none h-16`}
