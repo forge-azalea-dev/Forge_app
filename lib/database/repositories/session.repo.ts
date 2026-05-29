@@ -13,6 +13,14 @@ export const SessionRepo = {
     return db.select<Session[]>("SELECT * FROM sessions ORDER BY started_at DESC");
   },
 
+  async getRecent(limit: number): Promise<Session[]> {
+    const db = await getDb();
+    return db.select<Session[]>(
+      "SELECT * FROM sessions ORDER BY started_at DESC LIMIT $1",
+      [limit],
+    );
+  },
+
   async getByProject(projectId: string): Promise<Session[]> {
     const db = await getDb();
     return db.select<Session[]>(

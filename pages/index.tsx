@@ -44,7 +44,7 @@ export default function DashboardPage() {
       try {
         const [projects, sessions, billings] = await Promise.all([
           ProjectRepo.getActive(),
-          SessionRepo.getAll(),
+          SessionRepo.getRecent(RECENT_SESSIONS_LIMIT),
           BillingRepo.getAll(),
         ]);
         setDashboardData({ projects, sessions, billings });
@@ -61,9 +61,13 @@ export default function DashboardPage() {
   const { projects, sessions, billings } = dashboardData;
 
   // Nearest active billing with a next_billing date
-  const upcomingBilling = billings
-    .filter((b) => b.status === "active" && b.next_billing !== null)
-    .sort((a, b) => (a.next_billing! < b.next_billing! ? -1 : 1))[0] ?? null;
+  const upcomingBilling =
+    billings
+      .filter(
+        (b): b is Billing & { next_billing: string } =>
+          b.status === "active" && b.next_billing !== null,
+      )
+      .sort((a, b) => (a.next_billing < b.next_billing ? -1 : 1))[0] ?? null;
 
   return (
     <div className="space-y-6">
@@ -178,7 +182,7 @@ export default function DashboardPage() {
               </p>
             ) : (
               <ul className="space-y-0.5">
-                {sessions.slice(0, RECENT_SESSIONS_LIMIT).map((session) => (
+                {sessions.map((session) => (
                   <li
                     key={session.id}
                     className="font-mono text-xs text-[color:var(--color-muted)]"
