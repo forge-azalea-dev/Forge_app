@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Layout from "@/components/Layout";
 import { SkeletonList } from "@/components/Skeleton";
 import { useTodos } from "@/hooks/useTodos";
 import type { StatusFilter } from "@/hooks/useTodos";
@@ -124,8 +123,7 @@ export default function TodosPage() {
   };
 
   return (
-    <Layout>
-      <div className="flex flex-col space-y-0">
+    <div className="flex flex-col space-y-0">
         {/* Page header */}
         <div className="mb-4 flex items-center justify-between">
           <div className="space-y-1">
@@ -382,8 +380,7 @@ export default function TodosPage() {
             </div>
           </div>
         </div>
-      </div>
-    </Layout>
+    </div>
   );
 }
 
