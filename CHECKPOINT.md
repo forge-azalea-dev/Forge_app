@@ -1,6 +1,6 @@
 # Forge Checkpoint
 
-Last updated: 2026-05-29 (Phase 8b selesai + hotfix store race condition)
+Last updated: 2026-05-29 (Phase 8c selesai — Dashboard AI Insights)
 
 ## Current Status
 
@@ -14,6 +14,7 @@ Last updated: 2026-05-29 (Phase 8b selesai + hotfix store race condition)
 - Phase 8a selesai: AI Integration Foundation — tauri-plugin-store, config module, useAI hook, Settings page.
 - Phase 8b selesai: AI per Modul — PRD Generator, Prompt Suggester, AI Chatbox (useChat hook + /chat page).
 - Hotfix 8b: store race condition di `lib/config.ts` — cache promise bukan value (commit `b21d00b`).
+- Phase 8c selesai: Dashboard AI Insights — "✨ Generate Insights" button + InsightCard component + markdown renderer.
 - Shared layout sudah terpasang (`components/Layout.tsx`) dengan:
   - sidebar navigation (Dashboard, PRD, Progress, Prompts, Sessions, AI Chat, Billing, Settings)
   - topbar title + realtime timestamp (hydration-safe)
@@ -26,22 +27,22 @@ Last updated: 2026-05-29 (Phase 8b selesai + hotfix store race condition)
   - `pages/sessions/index.tsx` ← **functional** (Phase 7)
   - `pages/settings/index.tsx` ← **functional** (Phase 8a)
   - `pages/chat/index.tsx` ← **functional** (Phase 8b)
-- Pages placeholder:
-  - `pages/index.tsx`
+- Pages functional:
+  - `pages/index.tsx` ← **functional** (Phase 8c — AI Insights)
 - Design tokens + global styles sudah diterapkan di `styles/globals.css`.
 - Next static export sudah aktif di `next.config.ts` (`output: "export"` + `images.unoptimized: true`).
 - Tauri v2 sudah terinisialisasi (`src-tauri/*` sudah ada).
 
 ## Latest Commit
 
-- Latest: `b21d00b` — `fix: config store — cache promise to prevent concurrent load() race condition`
+- Phase 8c: `87a3281` — `fix: dashboard insights — error handling, list indent, padding, dead constants`
+- Phase 8c: `ed225ef` — `feat: add AI insights to dashboard`
+- Phase 8b hotfix docs: `8f094c2` — `docs: document store race condition hotfix and stale .next cache issue`
+- Phase 8b hotfix: `b21d00b` — `fix: config store — cache promise to prevent concurrent load() race condition`
 - Phase 8b docs: `7f01731` — `docs: update CHECKPOINT.md for Phase 8b AI per Modul`
 - Phase 8b: `5bb99ef` — `fix: chat — stale closure ref, concurrency guard, named constants, empty state guard`
-- Phase 8b: `e30b9b6` — `fix: chat — clearChat resets error, bounce animation, hide empty state when unconfigured`
 - Phase 8b: `e2372c4` — `feat: AI chatbox — useChat hook, chat page, nav item`
-- Phase 8b: `296b7b8` — `fix: prompt suggester — save error handling, backdrop dismiss, button layout`
 - Phase 8b: `fe81606` — `feat: add AI prompt suggester to Prompt Vault`
-- Phase 8b: `84e145f` — `fix: PRD editor — isGenerating guard, type imports, save guard`
 - Phase 8b: `e890327` — `feat: add AI generate button to PRD editor`
 - Phase 8a: `2daceeb` — `docs: update CHECKPOINT.md for Phase 8a AI Integration Foundation`
 
@@ -303,11 +304,69 @@ Notes:
 - AI error displayed in `text-[#C41E3A]` font-mono across all consumers
 - Chat history sent to API as formatted string (not separate messages array — `generate()` takes 2 string args only)
 
+## Dashboard AI Insights (Phase 8c — selesai)
+
+```
+components/
+└── InsightCard.tsx        — AI insights component: button, loading, result card, dismiss
+
+pages/
+└── index.tsx              — updated: imports InsightCard, renders below 4-card grid
+```
+
+**Flow:**
+1. User klik "✨ Generate Insights" → `handleGenerate()` fired
+2. `Promise.all([ProjectRepo.getActive(), BillingRepo.getAll(), SessionRepo.getAll()])` concurrent fetch
+3. Sessions di-slice ke 5 terakhir (`RECENT_SESSIONS_LIMIT = 5`)
+4. `buildUserPrompt()` format data jadi context string
+5. `generate(SYSTEM_PROMPT, userPrompt)` kirim ke Anthropic API via `useAI()`
+6. Result di-render via `renderMarkdown()` di dalam result card
+
+**`renderMarkdown()` — custom, no dependencies:**
+- `## text` → `<h2>` font-mono uppercase
+- `**text**` → `<strong>` via `parseInline()`
+- `- text` → `<li>` buffered dalam `liBuffer[]`, di-flush ke `<ul className="list-disc ml-4">` saat ganti blok
+- Regular lines → `<p className="text-xs text-[color:var(--color-muted)] mb-1">`
+- Empty lines → flush list buffer, skip
+- Returns `ReactNode[]` dengan stable index keys
+
+**Key design decisions:**
+- `buildUserPrompt()` pure function di module scope — tidak di dalam component
+- `SYSTEM_PROMPT` const di module scope — tidak magic string di handleGenerate
+- `flushList()` inner helper di renderMarkdown — list buffer di-flush setiap kali blok berubah (termasuk akhir)
+- `try/catch` di handleGenerate wrap hanya DB + AI call — guard dan reset (`setInsight(null)`) di luar try
+- `isConfigured` false → banner teks, tombol disembunyikan (consistent dengan pattern 8b)
+- Error AI (`aiError` dari useAI) ditampilkan merah `text-[#C41E3A]` di bawah tombol
+- Dismiss button set `insight` ke `null` — card hilang
+
+**Notes:**
+- Phase 8c tidak menambah npm package baru (constraint terpenuhi)
+- Dashboard (`pages/index.tsx`) tidak lagi placeholder — sekarang functional
+- 4 placeholder cards tetap ada (konten real direncanakan Phase 9)
+
 ## Phase 9 Candidates
 
 Target fase berikutnya (belum ada spec):
-- Dashboard / Home — `pages/index.tsx` (summary stats, recent sessions, quick actions)
+- Dashboard Live Data — isi 4 placeholder cards dengan data real (active project count, current phase, recent sessions, upcoming billing)
 - AI Summarize Session — "✨ Summarize" button in Session Log to generate summary from session title/notes
+
+## Smoke Test Checklist (Phase 8c — Dashboard AI Insights)
+
+Jalankan `npx tauri dev` dari `d:\Forge-Lab\forge` lalu verifikasi:
+
+| Test | Expected |
+|------|----------|
+| Buka Dashboard (`/`) | 4 placeholder cards tampil, tidak ada error |
+| Tanpa API key | Teks "Konfigurasi API key di Settings untuk menggunakan AI Insights." tampil (bukan tombol) |
+| Dengan API key → buka Dashboard | Tombol "✨ Generate Insights" tampil |
+| Klik "✨ Generate Insights" | Tombol berubah spinner + "Generating...", disabled |
+| Generate selesai | Card "AI INSIGHTS" muncul di bawah tombol |
+| Konten card | Markdown ter-render: heading `##` bold, bullet `- `, paragraph biasa |
+| Klik "✕ Dismiss" | Card hilang, tombol kembali normal |
+| Klik Generate saat generating | Tidak ada efek (guard aktif) |
+| Generate gagal (API error) | Error merah `text-[#C41E3A]` muncul di bawah tombol |
+| Tidak ada project aktif | Bagian ACTIVE PROJECTS di prompt berisi "Tidak ada project aktif." — AI tetap respond |
+| Tidak ada sesi | Bagian RECENT SESSIONS berisi "Tidak ada sesi." |
 
 ## Smoke Test Checklist (Phase 8b — AI per Modul)
 
