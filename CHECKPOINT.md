@@ -1,6 +1,6 @@
 # Forge Checkpoint
 
-Last updated: 2026-05-29 (Phase 7 implemented, pending smoke test)
+Last updated: 2026-05-29 (Phase 8a implemented, pending smoke test)
 
 ## Current Status
 
@@ -11,8 +11,9 @@ Last updated: 2026-05-29 (Phase 7 implemented, pending smoke test)
 - Phase 5 selesai: Progress Tracker page fully functional (pipeline bar, optimistic update, status filter).
 - Phase 6 selesai: Prompt Vault page fully functional (CRUD + search + filter tabs + copy clipboard + use_count).
 - Phase 7 selesai: Session Log page fully functional (CRUD + expand/collapse detail + project filter + duration badge).
+- Phase 8a selesai: AI Integration Foundation — tauri-plugin-store, config module, useAI hook, Settings page.
 - Shared layout sudah terpasang (`components/Layout.tsx`) dengan:
-  - sidebar navigation
+  - sidebar navigation (Dashboard, PRD, Progress, Prompts, Sessions, Billing, Settings)
   - topbar title + realtime timestamp (hydration-safe)
   - logo dari `public/forge-logo.png`
 - Pages functional:
@@ -21,6 +22,7 @@ Last updated: 2026-05-29 (Phase 7 implemented, pending smoke test)
   - `pages/progress/index.tsx` ← **functional** (Phase 5)
   - `pages/prompts/index.tsx` ← **functional** (Phase 6)
   - `pages/sessions/index.tsx` ← **functional** (Phase 7)
+  - `pages/settings/index.tsx` ← **functional** (Phase 8a)
 - Pages placeholder:
   - `pages/index.tsx`
 - Design tokens + global styles sudah diterapkan di `styles/globals.css`.
@@ -29,11 +31,14 @@ Last updated: 2026-05-29 (Phase 7 implemented, pending smoke test)
 
 ## Latest Commit
 
-- Latest: `37651fa` — `fix: include project_id in SessionRepo.update SQL and page update payload`
-- Phase 7: `2feb5c0` — `feat: Session Log page — timeline, project filter, CRUD modal, expand/collapse`
-- Phase 6: `c95904d` — `feat: Prompt Vault page — search, filter tabs, grid, copy clipboard, CRUD modal`
-- Phase 5: `b5d4a09` — `feat: Progress Tracker page — filter tabs, grid, optimistic updates`
-- Phase 4: `d203607` — `feat: PRD Manager page — split panel, project list + PRD editor`
+- Latest: `4e6fa6e` — `chore: add Cargo.lock update + Phase 8a plan file`
+- Phase 8a: `f09940e` — `fix: settings — explicit messageType state for color, surface config load error`
+- Phase 8a: `94d4857` — `feat: Settings page — API key config, show/hide, test connection + nav item`
+- Phase 8a: `2f632f7` — `fix: useAI — remove rethrow, discriminated union type, improve error fallback`
+- Phase 8a: `b1b5380` — `feat: add useAI hook with Anthropic API integration`
+- Phase 8a: `c25ebc0` — `fix: config module — store singleton, sanitize errors, enforce ConfigKey type`
+- Phase 8a: `29d51ea` — `feat: add tauri-plugin-store + config module for API key storage`
+- Phase 7: `37651fa` — `fix: include project_id in SessionRepo.update SQL and page update payload`
 
 ## Database Layer (Phase 2 — selesai)
 
@@ -185,11 +190,65 @@ pages/sessions/
 `setError(null)` di awal setiap mutation agar error bar tidak stale.
 `SessionFormData` derived dari `Omit<CreateSession, "started_at" | "ended_at">`.
 
-## Phase 8 Candidates
+## AI Integration Foundation (Phase 8a — selesai)
+
+```
+lib/
+└── config.ts              — Tauri store wrapper (getConfig/setConfig/deleteConfig)
+                             store singleton, ConfigKey type, sanitized errors
+
+hooks/
+└── useAI.ts               — Anthropic API hook: generate(system, user) → Promise<string>
+                             isConfigured (checked on mount), isLoading, error state
+                             generate() resolves "" on failure — callers check error state
+
+pages/settings/
+└── index.tsx              — API key input (type=password + show/hide toggle)
+                             Save (setConfig/deleteConfig) + Test Connection (live API call)
+                             5-state status badge: unconfigured/saved/connected/invalid/testing
+                             messageType state drives color (not string inspection)
+```
+
+Rust side:
+- `src-tauri/Cargo.toml` — `tauri-plugin-store = "2"` added
+- `src-tauri/src/lib.rs` — `.plugin(tauri_plugin_store::Builder::default().build())` before sql
+- `src-tauri/capabilities/default.json` — `"store:default"` added
+
+Security:
+- API key never in logs/errors (sanitized in setConfig catch)
+- type=password by default, show/hide toggle only affects render
+- HTTPS to api.anthropic.com (TLS enforced by OS)
+- `anthropic-dangerous-direct-browser-access: true` header required for WebView fetch
+
+Notes:
+- `@tauri-apps/plugin-store` v2.4.3: `load()` options need `defaults: {}` (TypeScript constraint)
+- `testApiKey` in settings page does NOT distinguish 401 vs 429 (both show "invalid")
+- `AnthropicMessage` type defined separately in useAI.ts (discriminated union) and settings page (loose) — consolidate if a shared lib/anthropic-types.ts is introduced
+
+## Phase 8b Candidates
 
 Target fase berikutnya (belum ada spec):
 - Dashboard / Home — `pages/index.tsx` (summary stats, recent sessions, quick actions)
-- AI Integration — Anthropic API untuk generate PRD draft & summarize session
+- AI Generate PRD — gunakan `useAI` hook di PRD Manager untuk generate draft dari judul project
+- AI Summarize Session — gunakan `useAI` hook di Session Log untuk summarize session
+
+## Smoke Test Checklist (Phase 8a — AI Integration Foundation)
+
+Jalankan `npx tauri dev` dari `d:\Forge-Lab\forge` lalu verifikasi:
+
+| Test | Expected |
+|------|----------|
+| Buka app | "Settings" muncul di sidebar (gear icon, setelah Billing) |
+| Klik Settings | Page terbuka, badge "Belum dikonfigurasi", input kosong |
+| Ketik API key → klik Save | Badge berubah "Tersimpan (belum diuji)", message hijau "API key tersimpan." |
+| Reload app → buka Settings | Key ter-load di input (masked), badge "Tersimpan (belum diuji)" |
+| Klik eye icon | Key tampil dalam plaintext |
+| Klik eye icon lagi | Key kembali masked |
+| Key valid → Test Connection | Badge "Connected ✓" (hijau) |
+| Key invalid → Test Connection | Badge "Invalid Key ✗" (merah), message error |
+| Kosongkan input → Save | Badge "Belum dikonfigurasi", message hijau "API key dihapus." |
+| Klik Test tanpa isi key | Message "Masukkan API key terlebih dahulu." |
+| Halaman lain (Billing, PRD, dll) | Tidak ada regresi, semua masih berfungsi |
 
 ## Smoke Test Checklist (Phase 7 — Session Log)
 
