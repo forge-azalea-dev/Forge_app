@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSession } from "@/hooks/useSession";
 import { SessionCard } from "@/components/sessions/SessionCard";
 import { SessionForm } from "@/components/sessions/SessionForm";
+import { SkeletonList } from "@/components/Skeleton";
 import type { Session } from "@/lib/database";
 
 type SessionFormData = Omit<import("@/lib/database").CreateSession, "started_at" | "ended_at">;
@@ -118,9 +119,7 @@ export default function SessionLogPage() {
 
       {/* Content */}
       {loading ? (
-        <div className="py-12 text-center">
-          <span className="font-mono text-[11px] text-[#666666]">Memuat...</span>
-        </div>
+        <SkeletonList rows={3} />
       ) : filteredSessions.length === 0 ? (
         <div className="py-12 text-center">
           <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#666666]">

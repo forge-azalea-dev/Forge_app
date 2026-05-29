@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { InsightCard } from "@/components/InsightCard";
+import { SkeletonLines } from "@/components/Skeleton";
 import {
   ProjectRepo,
   SessionRepo,
@@ -96,9 +97,7 @@ export default function DashboardPage() {
             </div>
 
             {loading ? (
-              <p className="font-mono text-xs text-[color:var(--color-muted)]">
-                Memuat...
-              </p>
+              <SkeletonLines lines={2} />
             ) : projects.length === 0 ? (
               <p className="text-xs text-[color:var(--color-muted)]">
                 Belum ada project aktif.
@@ -138,9 +137,7 @@ export default function DashboardPage() {
             </div>
 
             {loading ? (
-              <p className="font-mono text-xs text-[color:var(--color-muted)]">
-                Memuat...
-              </p>
+              <SkeletonLines lines={2} />
             ) : projects.length === 0 ? (
               <p className="text-xs text-[color:var(--color-muted)]">
                 Belum ada project aktif.
@@ -173,9 +170,7 @@ export default function DashboardPage() {
             </div>
 
             {loading ? (
-              <p className="font-mono text-xs text-[color:var(--color-muted)]">
-                Memuat...
-              </p>
+              <SkeletonLines lines={2} />
             ) : sessions.length === 0 ? (
               <p className="text-xs text-[color:var(--color-muted)]">
                 Belum ada sesi.
@@ -210,9 +205,7 @@ export default function DashboardPage() {
             </div>
 
             {loading ? (
-              <p className="font-mono text-xs text-[color:var(--color-muted)]">
-                Memuat...
-              </p>
+              <SkeletonLines lines={2} />
             ) : upcomingBilling === null ? (
               <p className="text-xs text-[color:var(--color-muted)]">
                 Tidak ada tagihan mendatang.

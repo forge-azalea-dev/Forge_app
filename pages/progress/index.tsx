@@ -1,5 +1,6 @@
 import { useProgress } from "@/hooks/useProgress";
 import { ProjectProgressCard } from "@/components/progress/ProjectProgressCard";
+import { SkeletonList } from "@/components/Skeleton";
 
 type StatusFilter = import("@/lib/database").ProjectStatus | "all";
 
@@ -60,9 +61,7 @@ export default function ProgressTrackerPage() {
 
       {/* Content */}
       {loading ? (
-        <div className="py-12 text-center">
-          <span className="font-mono text-[11px] text-[#666666]">Memuat...</span>
-        </div>
+        <SkeletonList rows={3} />
       ) : filteredProjects.length === 0 ? (
         <div className="py-12 text-center">
           <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#666666]">

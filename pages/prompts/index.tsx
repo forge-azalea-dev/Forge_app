@@ -2,6 +2,7 @@ import { useState } from "react";
 import { usePrompts } from "@/hooks/usePrompts";
 import { PromptCard } from "@/components/prompts/PromptCard";
 import { PromptForm } from "@/components/prompts/PromptForm";
+import { SkeletonList } from "@/components/Skeleton";
 import { AI_TOOLS, ProjectRepo, PHASE_LABELS } from "@/lib/database";
 import { useAI } from "@/hooks/useAI";
 import type { Prompt, CreatePrompt } from "@/lib/database";
@@ -238,9 +239,7 @@ Suggest 3 prompt yang berguna untuk fase ini.`;
 
       {/* Content */}
       {loading ? (
-        <div className="py-12 text-center">
-          <span className="font-mono text-[11px] text-[#666666]">Memuat...</span>
-        </div>
+        <SkeletonList rows={3} />
       ) : filteredPrompts.length === 0 ? (
         <div className="py-12 text-center">
           <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#666666]">

@@ -3,6 +3,7 @@ import { Plus, Search } from "lucide-react";
 import { useBilling } from "@/hooks/useBilling";
 import { BillingCard } from "@/components/billing/BillingCard";
 import { BillingForm } from "@/components/billing/BillingForm";
+import { SkeletonList } from "@/components/Skeleton";
 import type { Billing, CreateBilling, UpdateBilling } from "@/lib/database";
 import type { BillingStatus } from "@/lib/database";
 
@@ -143,13 +144,7 @@ export default function BillingPage() {
       )}
 
       {/* Loading */}
-      {loading && (
-        <div className="flex justify-center py-12">
-          <span className="font-mono text-xs text-[color:var(--color-muted)]">
-            Memuat data...
-          </span>
-        </div>
-      )}
+      {loading && <SkeletonList rows={4} />}
 
       {/* Error */}
       {!loading && error && (
