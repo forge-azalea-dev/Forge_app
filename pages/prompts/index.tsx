@@ -169,7 +169,7 @@ Suggest 3 prompt yang berguna untuk fase ini.`;
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Page header */}
       <div className="space-y-1">
         <h1 className="font-mono text-sm font-semibold uppercase tracking-[0.18em] text-[color:var(--color-muted)]">

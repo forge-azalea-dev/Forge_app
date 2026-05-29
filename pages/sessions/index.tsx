@@ -73,7 +73,7 @@ export default function SessionLogPage() {
       : null;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Page header */}
       <div className="space-y-1">
         <h1 className="font-mono text-sm font-semibold uppercase tracking-[0.18em] text-[color:var(--color-muted)]">
