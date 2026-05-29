@@ -1,7 +1,5 @@
 import { InsightCard } from "@/components/InsightCard";
 
-const CARD_GAP_CLASS = "grid gap-4 md:gap-6";
-
 const cardBaseClasses =
   "rounded-[6px] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-[0_0_8px_rgba(139,0,0,0.3)]";
 
@@ -20,13 +18,11 @@ export default function DashboardPage() {
         </p>
       </header>
 
-      <section
-        className={`${CARD_GAP_CLASS} grid-cols-1 md:grid-cols-2 xl:grid-cols-2`}
-      >
+      <section className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
         <article
           className={`${cardBaseClasses} ${cardAccentClasses} overflow-hidden`}
         >
-          <div className="flex h-full flex-col gap-2 px-4 py-3 pl-5">
+          <div className="flex h-full flex-col gap-2 pl-5 pr-4 py-3">
             <div className="flex items-center justify-between">
               <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--color-text)]">
                 Active Projects
@@ -45,7 +41,7 @@ export default function DashboardPage() {
         <article
           className={`${cardBaseClasses} ${cardAccentClasses} overflow-hidden`}
         >
-          <div className="flex h-full flex-col gap-2 px-4 py-3 pl-5">
+          <div className="flex h-full flex-col gap-2 pl-5 pr-4 py-3">
             <div className="flex items-center justify-between">
               <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--color-text)]">
                 Current Phase
@@ -64,7 +60,7 @@ export default function DashboardPage() {
         <article
           className={`${cardBaseClasses} ${cardAccentClasses} overflow-hidden`}
         >
-          <div className="flex h-full flex-col gap-2 px-4 py-3 pl-5">
+          <div className="flex h-full flex-col gap-2 pl-5 pr-4 py-3">
             <div className="flex items-center justify-between">
               <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--color-text)]">
                 Recent Sessions
@@ -83,7 +79,7 @@ export default function DashboardPage() {
         <article
           className={`${cardBaseClasses} ${cardAccentClasses} overflow-hidden`}
         >
-          <div className="flex h-full flex-col gap-2 px-4 py-3 pl-5">
+          <div className="flex h-full flex-col gap-2 pl-5 pr-4 py-3">
             <div className="flex items-center justify-between">
               <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--color-text)]">
                 Billing Reminder

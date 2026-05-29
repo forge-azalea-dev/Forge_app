@@ -97,12 +97,12 @@ function renderMarkdown(text: string): ReactNode[] {
       flushList(idx);
       nodes.push(
         <h2 key={`h2-${idx}`} className={H2_CLASSES}>
-          {line.slice(3)}
+          {line.slice(3).trim()}
         </h2>,
       );
     } else if (line.startsWith("- ")) {
       liBuffer.push(
-        <li key={`li-${idx}`} className={`list-disc ml-4 ${MUTED_TEXT_CLASSES}`}>
+        <li key={`li-${idx}`} className={MUTED_TEXT_CLASSES}>
           {parseInline(line.slice(2), `li-${idx}`)}
         </li>,
       );
@@ -132,17 +132,21 @@ export function InsightCard() {
 
     setInsight(null);
 
-    const [projects, billing, allSessions] = await Promise.all([
-      ProjectRepo.getActive(),
-      BillingRepo.getAll(),
-      SessionRepo.getAll(),
-    ]);
+    try {
+      const [projects, billing, allSessions] = await Promise.all([
+        ProjectRepo.getActive(),
+        BillingRepo.getAll(),
+        SessionRepo.getAll(),
+      ]);
 
-    const sessions = allSessions.slice(0, RECENT_SESSIONS_LIMIT);
-    const userPrompt = buildUserPrompt(projects, billing, sessions);
-    const result = await generate(SYSTEM_PROMPT, userPrompt);
+      const sessions = allSessions.slice(0, RECENT_SESSIONS_LIMIT);
+      const userPrompt = buildUserPrompt(projects, billing, sessions);
+      const result = await generate(SYSTEM_PROMPT, userPrompt);
 
-    if (result) setInsight(result);
+      if (result) setInsight(result);
+    } catch (err) {
+      console.error("Failed to fetch workflow data:", err);
+    }
   };
 
   return (
