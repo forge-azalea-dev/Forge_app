@@ -18,6 +18,7 @@ Last updated: 2026-05-29 (Production Build v0.1.0 berhasil)
 - Phase 8d selesai: AI Summarize per Session Card — per-card "✨ Summarize" button, inline AI RINGKASAN panel, dismissable error.
 - Phase 9 selesai: Polish & Bug Fix — dashboard live data, form accessibility, consistent spacing.
 - Production Build v0.1.0 selesai: Windows installer (.msi + .exe) berhasil di-generate.
+- Branding: sidebar subtitle diubah dari "DEV WORKFLOW" → "Azalea_Dev WorkFlow" (`components/Layout.tsx:161`).
 - Shared layout sudah terpasang (`components/Layout.tsx`) dengan:
   - sidebar navigation (Dashboard, PRD, Progress, Prompts, Sessions, AI Chat, Billing, Settings)
   - topbar title + realtime timestamp (hydration-safe)

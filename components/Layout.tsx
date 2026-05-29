@@ -158,7 +158,7 @@ export default function Layout({ children }: LayoutProps) {
               FORGE
             </span>
             <span className="font-mono text-[10px] text-[color:var(--color-muted)]">
-              DEV WORKFLOW
+              Azalea_Dev WorkFlow
             </span>
           </div>
         </div>
