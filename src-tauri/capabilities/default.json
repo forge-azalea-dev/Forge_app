@@ -9,6 +9,7 @@
     "core:default",
     "sql:default",
     "sql:allow-execute",
-    "store:default"
+    "store:default",
+    "updater:default"
   ]
 }

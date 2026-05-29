@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Tauri updater signing keys
+forge-updater-key
+forge-updater-key.pub
