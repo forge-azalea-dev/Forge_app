@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { getConfig, ConfigKeys } from "@/lib/config";
 
-interface AnthropicMessage {
-  type: string;
-  text: string;
-}
+type AnthropicMessage =
+  | { type: "text"; text: string }
+  | { type: string };
 
 interface AnthropicResponse {
   content: AnthropicMessage[];
@@ -77,12 +76,12 @@ export function useAI(): UseAIReturn {
       if (!first || first.type !== "text") {
         throw new Error("Unexpected response format dari Anthropic API.");
       }
-      return first.text;
+      return (first as { type: "text"; text: string }).text;
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Gagal generate respons AI.";
+        err instanceof Error ? err.message : String(err) || "Gagal generate respons AI.";
       setError(message);
-      throw err;
+      return "";
     } finally {
       setIsLoading(false);
     }
