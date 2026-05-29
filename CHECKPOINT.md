@@ -38,7 +38,7 @@ Last updated: 2026-05-29 (Production Build v0.1.0 berhasil)
 
 ## Latest Commit
 
-- Production Build: (TBD after commit) — `build: add tauri script to package.json, production build v0.1.0`
+- Production Build: `901cb82` — `build: add tauri script to package.json, production build v0.1.0`
 - Phase 9: `84e004d` — `style: standardize page spacing to space-y-6`
 - Phase 9: `92dc7d7` — `fix: add id/htmlFor to all form fields for accessibility`
 - Phase 9: `727a7b0` — `fix: dashboard — type-guard billing filter, getRecent for sessions`
