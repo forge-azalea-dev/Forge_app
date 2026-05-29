@@ -37,3 +37,5 @@ export { PrdRepo } from "./repositories/prd.repo";
 export { PromptRepo } from "./repositories/prompt.repo";
 export { SessionRepo } from "./repositories/session.repo";
 export { BillingRepo } from "./repositories/billing.repo";
+export type { Todo, CreateTodo, UpdateTodo } from "./types";
+export { TodoRepo } from "./repositories/todo.repo";
