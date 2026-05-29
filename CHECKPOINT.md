@@ -1,6 +1,6 @@
 # Forge Checkpoint
 
-Last updated: 2026-05-29 (Production Build v0.1.0 berhasil)
+Last updated: 2026-05-30 (Auto-updater + GitHub Release pipeline selesai)
 
 ## Current Status
 
@@ -19,6 +19,10 @@ Last updated: 2026-05-29 (Production Build v0.1.0 berhasil)
 - Phase 9 selesai: Polish & Bug Fix — dashboard live data, form accessibility, consistent spacing.
 - Production Build v0.1.0 selesai: Windows installer (.msi + .exe) berhasil di-generate.
 - Branding: sidebar subtitle diubah dari "DEV WORKFLOW" → "Azalea_Dev WorkFlow" (`components/Layout.tsx:161`).
+- Skeleton UI: shimmer animation (`#1A1A1A` → `#222222`) — `components/Skeleton.tsx` + semua loading states di-replace dari "Memuat..." teks.
+- Auto-updater: `tauri-plugin-updater` terpasang, endpoint GitHub Releases, silent update on startup.
+- GitHub repo: `https://github.com/forge-azalea-dev/Forge_app` (public).
+- CI/CD: GitHub Actions release workflow — trigger `v*` tag → build → sign → upload installer + `latest.json`.
 - Shared layout sudah terpasang (`components/Layout.tsx`) dengan:
   - sidebar navigation (Dashboard, PRD, Progress, Prompts, Sessions, AI Chat, Billing, Settings)
   - topbar title + realtime timestamp (hydration-safe)
@@ -39,6 +43,10 @@ Last updated: 2026-05-29 (Production Build v0.1.0 berhasil)
 
 ## Latest Commit
 
+- Auto-updater: `9c225a6` — `ci: remove empty password secret from release workflow`
+- Auto-updater: `e859b5d` — `feat: setup auto-updater with GitHub Releases`
+- Skeleton UI: `83a25fc` — `feat: replace loading text with shimmer skeleton UI`
+- Branding: `62ec12c` — `chore: update sidebar subtitle to Azalea_Dev WorkFlow`
 - Production Build: `901cb82` — `build: add tauri script to package.json, production build v0.1.0`
 - Phase 9: `84e004d` — `style: standardize page spacing to space-y-6`
 - Phase 9: `92dc7d7` — `fix: add id/htmlFor to all form fields for accessibility`
