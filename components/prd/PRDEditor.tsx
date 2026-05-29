@@ -4,6 +4,9 @@ import type { Project, Prd, Phase, ProjectStatus } from "@/lib/database";
 import type { PrdFormData } from "@/hooks/usePRD";
 import { PHASES, PHASE_LABELS, PROJECT_STATUSES } from "@/lib/database";
 import { useAI } from "@/hooks/useAI";
+import { StackSelector } from "@/components/prd/StackSelector";
+import { parseStack, stringifyStack } from "@/lib/database/stack-presets";
+import type { StackCategory } from "@/lib/database/stack-presets";
 
 interface PRDEditorProps {
   project: Project;
@@ -26,7 +29,7 @@ export function PRDEditor({
   onSave,
 }: PRDEditorProps) {
   const [name, setName] = useState(project.name);
-  const [stack, setStack] = useState(project.stack ?? "");
+  const [stack, setStack] = useState<Record<StackCategory, string[]>>(() => parseStack(project.stack ?? null));
   const [description, setDescription] = useState(project.description ?? "");
   const [figmaUrl, setFigmaUrl] = useState(project.figma_url ?? "");
   const [repoUrl, setRepoUrl] = useState(project.repo_url ?? "");
@@ -40,7 +43,7 @@ export function PRDEditor({
   // Sync form saat project atau PRD ganti (termasuk async load PRD)
   useEffect(() => {
     setName(project.name);
-    setStack(project.stack ?? "");
+    setStack(parseStack(project.stack ?? null));
     setDescription(project.description ?? "");
     setFigmaUrl(project.figma_url ?? "");
     setRepoUrl(project.repo_url ?? "");
@@ -61,8 +64,12 @@ Format:
 ## Out of Scope
 ## Sukses Kriteria
 Keep it practical and developer-friendly.`;
+    const stackStr = Object.entries(stack)
+      .filter(([, v]) => v.length > 0)
+      .map(([k, v]) => `${k}: ${v.join(', ')}`)
+      .join(' | ');
     const userPrompt = `Project: ${name}
-Stack: ${stack}
+Stack: ${stackStr}
 Deskripsi: ${description}
 Generate PRD untuk project ini.`;
     const result = await generate(systemPrompt, userPrompt);
@@ -75,7 +82,7 @@ Generate PRD untuk project ini.`;
     e.preventDefault();
     await onSave({
       name: name.trim() || project.name,
-      stack: stack.trim() || null,
+      stack: stringifyStack(stack),
       description: description.trim() || null,
       figma_url: figmaUrl.trim() || null,
       repo_url: repoUrl.trim() || null,
@@ -172,34 +179,27 @@ Generate PRD untuk project ini.`;
           />
         </div>
 
-        {/* Stack + Phase */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="prd-stack" className={LABEL_CLASS}>Tech Stack</label>
-            <input
-              id="prd-stack"
-              type="text"
-              value={stack}
-              onChange={(e) => setStack(e.target.value)}
-              className={INPUT_CLASS}
-              placeholder="Next.js, Tauri, SQLite"
-            />
-          </div>
-          <div>
-            <label htmlFor="prd-phase" className={LABEL_CLASS}>Phase</label>
-            <select
-              id="prd-phase"
-              value={phase}
-              onChange={(e) => setPhase(e.target.value as Phase)}
-              className={INPUT_CLASS}
-            >
-              {PHASES.map((p) => (
-                <option key={p} value={p}>
-                  {PHASE_LABELS[p as Phase]}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* Tech Stack */}
+        <div>
+          <label className={LABEL_CLASS}>Tech Stack</label>
+          <StackSelector value={stack} onChange={setStack} />
+        </div>
+
+        {/* Phase */}
+        <div>
+          <label htmlFor="prd-phase" className={LABEL_CLASS}>Phase</label>
+          <select
+            id="prd-phase"
+            value={phase}
+            onChange={(e) => setPhase(e.target.value as Phase)}
+            className={INPUT_CLASS}
+          >
+            {PHASES.map((p) => (
+              <option key={p} value={p}>
+                {PHASE_LABELS[p as Phase]}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Status + Figma URL */}
