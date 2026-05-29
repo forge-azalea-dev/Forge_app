@@ -64,14 +64,16 @@ export function useChat(): UseChatReturn {
   const {
     isConfigured,
     isLoading,
-    error,
+    error: aiError,
     generate,
   } = useAI();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [errorCleared, setErrorCleared] = useState(false);
 
   const sendMessage = async (content: string): Promise<void> => {
+    setErrorCleared(false);
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: "user",
@@ -112,12 +114,13 @@ export function useChat(): UseChatReturn {
 
   const clearChat = (): void => {
     setMessages([]);
+    setErrorCleared(true);
   };
 
   return {
     messages,
     isLoading,
-    error,
+    error: errorCleared ? null : aiError,
     isConfigured,
     selectedProjectId,
     setSelectedProjectId,

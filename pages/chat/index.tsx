@@ -87,7 +87,7 @@ export default function ChatPage() {
         )}
 
         {/* Empty state */}
-        {messages.length === 0 && !isLoading && (
+        {messages.length === 0 && !isLoading && isConfigured && (
           <div className="flex h-full flex-col items-center justify-center py-16 text-center">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-[8px] border border-[rgba(139,0,0,0.25)] bg-[rgba(139,0,0,0.08)]">
               <span className="font-mono text-lg font-bold text-[rgba(139,0,0,0.6)]">F</span>
@@ -128,21 +128,12 @@ export default function ChatPage() {
         {/* Loading bubble */}
         {isLoading && (
           <div className="mb-4 flex flex-col items-start">
-            <div className="max-w-[80%] animate-pulse rounded-[6px] border border-[rgba(139,0,0,0.15)] bg-[#111111] px-4 py-2">
-              <span className="inline-flex gap-1">
-                <span
-                  className="inline-block h-1.5 w-1.5 rounded-full bg-[#888888]"
-                  style={{ animationDelay: "0ms" }}
-                />
-                <span
-                  className="inline-block h-1.5 w-1.5 rounded-full bg-[#888888]"
-                  style={{ animationDelay: "150ms" }}
-                />
-                <span
-                  className="inline-block h-1.5 w-1.5 rounded-full bg-[#888888]"
-                  style={{ animationDelay: "300ms" }}
-                />
-              </span>
+            <div className="max-w-[80%] rounded-[6px] border border-[rgba(139,0,0,0.15)] bg-[#111111] px-4 py-2">
+              <div className="flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#666666] animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="h-1.5 w-1.5 rounded-full bg-[#666666] animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="h-1.5 w-1.5 rounded-full bg-[#666666] animate-bounce" style={{ animationDelay: "300ms" }} />
+              </div>
             </div>
           </div>
         )}
