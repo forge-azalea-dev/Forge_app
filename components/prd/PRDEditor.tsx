@@ -3,6 +3,7 @@ import { Save } from "lucide-react";
 import type { Project, Prd } from "@/lib/database";
 import type { PrdFormData } from "@/hooks/usePRD";
 import { PHASES, PHASE_LABELS, PROJECT_STATUSES } from "@/lib/database";
+import { useAI } from "@/hooks/useAI";
 
 interface PRDEditorProps {
   project: Project;
@@ -34,6 +35,8 @@ export function PRDEditor({
   const [prdTitle, setPrdTitle] = useState(prd?.title ?? "");
   const [prdContent, setPrdContent] = useState(prd?.content ?? "");
 
+  const { isConfigured, isLoading: isGenerating, error: aiError, generate } = useAI();
+
   // Sync form saat project atau PRD ganti (termasuk async load PRD)
   useEffect(() => {
     setName(project.name);
@@ -46,6 +49,27 @@ export function PRDEditor({
     setPrdTitle(prd?.title ?? "");
     setPrdContent(prd?.content ?? "");
   }, [project.id, prd?.id]);
+
+  const handleGenerate = async () => {
+    if (!isConfigured) return;
+    const systemPrompt = `You are a senior product manager. Generate a concise PRD in Bahasa Indonesia.
+Format:
+## Latar Belakang
+## Tujuan
+## Target Pengguna
+## Fitur Utama
+## Out of Scope
+## Sukses Kriteria
+Keep it practical and developer-friendly.`;
+    const userPrompt = `Project: ${name}
+Stack: ${stack}
+Deskripsi: ${description}
+Generate PRD untuk project ini.`;
+    const result = await generate(systemPrompt, userPrompt);
+    if (result) {
+      setPrdContent(result);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,23 +96,52 @@ export function PRDEditor({
   return (
     <form onSubmit={handleSubmit} className="flex h-full flex-col overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b border-[rgba(139,0,0,0.25)] px-6 py-3">
-        <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-[#666666]">
-          PRD Editor
-        </h2>
-        <div className="flex items-center gap-3">
-          {savedLabel && (
-            <span className="font-mono text-[11px] text-[#86c55d]">{savedLabel}</span>
-          )}
-          <button
-            type="submit"
-            disabled={saving}
-            className="inline-flex items-center gap-1.5 rounded-[4px] bg-[#8B0000] px-3 py-1.5 text-xs font-mono text-white transition-colors hover:bg-[#C41E3A] disabled:opacity-50"
-          >
-            <Save size={12} />
-            {saving ? "Menyimpan..." : "Save"}
-          </button>
+      <div className="border-b border-[rgba(139,0,0,0.25)] px-6 py-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-[#666666]">
+            PRD Editor
+          </h2>
+          <div className="flex items-center gap-3">
+            {savedLabel && (
+              <span className="font-mono text-[11px] text-[#86c55d]">{savedLabel}</span>
+            )}
+            {!isConfigured ? (
+              <span className="font-mono text-[11px] text-[#666666]">
+                Konfigurasi API key di Settings
+              </span>
+            ) : (
+              <button
+                type="button"
+                disabled={isGenerating}
+                onClick={handleGenerate}
+                className="inline-flex items-center gap-1.5 rounded-[4px] border border-[rgba(139,0,0,0.4)] bg-transparent px-3 py-1.5 text-xs font-mono text-[#C41E3A] transition-colors hover:bg-[rgba(139,0,0,0.15)] disabled:opacity-50"
+              >
+                {isGenerating ? (
+                  <>
+                    <span
+                      className="animate-spin rounded-full border-2 border-[rgba(196,30,58,0.3)] border-t-[#C41E3A]"
+                      style={{ width: 12, height: 12 }}
+                    />
+                    Generating...
+                  </>
+                ) : (
+                  <>✨ Generate with AI</>
+                )}
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={saving}
+              className="inline-flex items-center gap-1.5 rounded-[4px] bg-[#8B0000] px-3 py-1.5 text-xs font-mono text-white transition-colors hover:bg-[#C41E3A] disabled:opacity-50"
+            >
+              <Save size={12} />
+              {saving ? "Menyimpan..." : "Save"}
+            </button>
+          </div>
         </div>
+        {aiError && (
+          <p className="mt-1.5 font-mono text-[11px] text-[#C41E3A]">{aiError}</p>
+        )}
       </div>
 
       {/* Scrollable fields */}
