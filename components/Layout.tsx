@@ -7,6 +7,7 @@ import {
   GitBranch,
   BookMarked,
   Clock,
+  MessageSquare,
   CreditCard,
   Settings,
 } from "lucide-react";
@@ -29,6 +30,7 @@ type PageKey =
   | "progress"
   | "prompts"
   | "sessions"
+  | "chat"
   | "billing"
   | "settings";
 
@@ -38,6 +40,7 @@ const PAGE_TITLES: Record<PageKey, string> = {
   progress: "Progress Tracker",
   prompts: "Prompt Vault",
   sessions: "Session Log",
+  chat: "AI Chat",
   billing: "Billing Tracker",
   settings: "Settings",
 };
@@ -47,6 +50,7 @@ function getPageKey(pathname: string): PageKey {
   if (pathname.startsWith("/progress")) return "progress";
   if (pathname.startsWith("/prompts")) return "prompts";
   if (pathname.startsWith("/sessions")) return "sessions";
+  if (pathname.startsWith("/chat")) return "chat";
   if (pathname.startsWith("/billing")) return "billing";
   if (pathname.startsWith("/settings")) return "settings";
   return "dashboard";
@@ -114,6 +118,12 @@ export default function Layout({ children }: LayoutProps) {
       href: "/sessions",
       icon: <Clock className="h-4 w-4" />,
       key: "sessions",
+    },
+    {
+      label: "AI Chat",
+      href: "/chat",
+      icon: <MessageSquare className="h-4 w-4" />,
+      key: "chat",
     },
     {
       label: "Billing",
