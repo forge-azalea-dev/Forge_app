@@ -1,6 +1,6 @@
 # Forge Checkpoint
 
-Last updated: 2026-05-29 (Phase 8c selesai — Dashboard AI Insights)
+Last updated: 2026-05-29 (Phase 8d selesai — AI Summarize per Session Card)
 
 ## Current Status
 
@@ -15,6 +15,7 @@ Last updated: 2026-05-29 (Phase 8c selesai — Dashboard AI Insights)
 - Phase 8b selesai: AI per Modul — PRD Generator, Prompt Suggester, AI Chatbox (useChat hook + /chat page).
 - Hotfix 8b: store race condition di `lib/config.ts` — cache promise bukan value (commit `b21d00b`).
 - Phase 8c selesai: Dashboard AI Insights — "✨ Generate Insights" button + InsightCard component + markdown renderer.
+- Phase 8d selesai: AI Summarize per Session Card — per-card "✨ Summarize" button, inline AI RINGKASAN panel, dismissable error.
 - Shared layout sudah terpasang (`components/Layout.tsx`) dengan:
   - sidebar navigation (Dashboard, PRD, Progress, Prompts, Sessions, AI Chat, Billing, Settings)
   - topbar title + realtime timestamp (hydration-safe)
@@ -35,6 +36,8 @@ Last updated: 2026-05-29 (Phase 8c selesai — Dashboard AI Insights)
 
 ## Latest Commit
 
+- Phase 8d: `9323939` — `fix: session card AI — dismiss error, clean import, remove dead try/catch`
+- Phase 8d: `1c82f9f` — `feat: add AI summarize button to session card`
 - Phase 8c: `87a3281` — `fix: dashboard insights — error handling, list indent, padding, dead constants`
 - Phase 8c: `ed225ef` — `feat: add AI insights to dashboard`
 - Phase 8b hotfix docs: `8f094c2` — `docs: document store race condition hotfix and stale .next cache issue`
@@ -344,11 +347,50 @@ pages/
 - Dashboard (`pages/index.tsx`) tidak lagi placeholder — sekarang functional
 - 4 placeholder cards tetap ada (konten real direncanakan Phase 9)
 
+## AI Summarize per Session Card (Phase 8d — selesai)
+
+**File modified:** `components/sessions/SessionCard.tsx` only.
+
+**How it works:**
+1. Each `SessionCard` instance calls `useAI()` independently (per-card state, not global)
+2. "✨" button in hover-actions area (before Edit/Delete) — hidden when `!isConfigured`
+3. Click → `handleSummarize()`: guard `!isConfigured || isGenerating` → reset state → `generate(SYSTEM_PROMPT, buildSummarizePrompt(session, projectName))`
+4. Result renders as "AI RINGKASAN" panel inside the card, below the expanded detail section and above the expand indicator
+5. Dismiss ✕ clears `aiSummary`; separate `errorVisible` state with its own ✕ makes the error panel dismissable
+
+**`buildSummarizePrompt`** — module-level pure function — includes: SESSION title, Project (if any), Durasi (if any), Catatan, Decisions, Next Steps (all optional)
+
+**`errorVisible` pattern:** `useAI` doesn't expose `clearError`. Local `errorVisible: boolean` (init `true`) is reset to `true` on each `handleSummarize` call, and set `false` when the user dismisses the error panel.
+
+**Key design decisions:**
+- `useAI()` called unconditionally at component top (React rules) even when `!isConfigured`
+- `generate()` never throws — flat async handler, no try/catch needed
+- `import type { Session }` at top-level (not inline type alias at bottom)
+- Per-card `aiSummary` and `errorVisible` state — completely independent across cards
+
 ## Phase 9 Candidates
 
 Target fase berikutnya (belum ada spec):
 - Dashboard Live Data — isi 4 placeholder cards dengan data real (active project count, current phase, recent sessions, upcoming billing)
-- AI Summarize Session — "✨ Summarize" button in Session Log to generate summary from session title/notes
+- UI/UX Notes page — link Figma/Stitch + design decision notes per project
+
+## Smoke Test Checklist (Phase 8d — AI Summarize per Session Card)
+
+Jalankan `npx tauri dev` dari `d:\Forge-Lab\forge` lalu verifikasi:
+
+| Test | Expected |
+|------|----------|
+| Buka Session Log, hover card | Edit + Delete terlihat; tanpa API key: hanya 2 ikon |
+| Dengan API key → hover card | 3 ikon: ✨ · Pencil · Trash |
+| Klik ✨ | Tombol berubah spinner, `disabled` |
+| Generate selesai | Panel "AI RINGKASAN" muncul di dalam card |
+| Klik card saat AI RINGKASAN tampil | Card expand/collapse normal; panel tetap ada |
+| Klik ✕ di panel RINGKASAN | Panel hilang, tombol kembali normal |
+| Generate error (API key invalid) | Error merah muncul di dalam card dengan tombol ✕ |
+| Klik ✕ di error panel | Error panel hilang |
+| Klik ✨ lagi setelah dismiss error | Error baru bisa tampil (errorVisible reset ke true) |
+| Beberapa card sekaligus | Masing-masing card punya state sendiri (tidak saling pengaruh) |
+| Card tanpa summary/decisions/next_steps | Summarize tetap bisa dipanggil; AI generate berdasarkan title saja |
 
 ## Smoke Test Checklist (Phase 8c — Dashboard AI Insights)
 
