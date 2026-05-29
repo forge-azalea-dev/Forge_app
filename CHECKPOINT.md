@@ -1,6 +1,6 @@
 # Forge Checkpoint
 
-Last updated: 2026-05-29 (Phase 8a implemented, pending smoke test)
+Last updated: 2026-05-29 (Phase 8b implemented, pending smoke test)
 
 ## Current Status
 
@@ -12,8 +12,9 @@ Last updated: 2026-05-29 (Phase 8a implemented, pending smoke test)
 - Phase 6 selesai: Prompt Vault page fully functional (CRUD + search + filter tabs + copy clipboard + use_count).
 - Phase 7 selesai: Session Log page fully functional (CRUD + expand/collapse detail + project filter + duration badge).
 - Phase 8a selesai: AI Integration Foundation — tauri-plugin-store, config module, useAI hook, Settings page.
+- Phase 8b selesai: AI per Modul — PRD Generator, Prompt Suggester, AI Chatbox (useChat hook + /chat page).
 - Shared layout sudah terpasang (`components/Layout.tsx`) dengan:
-  - sidebar navigation (Dashboard, PRD, Progress, Prompts, Sessions, Billing, Settings)
+  - sidebar navigation (Dashboard, PRD, Progress, Prompts, Sessions, AI Chat, Billing, Settings)
   - topbar title + realtime timestamp (hydration-safe)
   - logo dari `public/forge-logo.png`
 - Pages functional:
@@ -23,6 +24,7 @@ Last updated: 2026-05-29 (Phase 8a implemented, pending smoke test)
   - `pages/prompts/index.tsx` ← **functional** (Phase 6)
   - `pages/sessions/index.tsx` ← **functional** (Phase 7)
   - `pages/settings/index.tsx` ← **functional** (Phase 8a)
+  - `pages/chat/index.tsx` ← **functional** (Phase 8b)
 - Pages placeholder:
   - `pages/index.tsx`
 - Design tokens + global styles sudah diterapkan di `styles/globals.css`.
@@ -31,14 +33,14 @@ Last updated: 2026-05-29 (Phase 8a implemented, pending smoke test)
 
 ## Latest Commit
 
-- Latest: `4e6fa6e` — `chore: add Cargo.lock update + Phase 8a plan file`
-- Phase 8a: `f09940e` — `fix: settings — explicit messageType state for color, surface config load error`
-- Phase 8a: `94d4857` — `feat: Settings page — API key config, show/hide, test connection + nav item`
-- Phase 8a: `2f632f7` — `fix: useAI — remove rethrow, discriminated union type, improve error fallback`
-- Phase 8a: `b1b5380` — `feat: add useAI hook with Anthropic API integration`
-- Phase 8a: `c25ebc0` — `fix: config module — store singleton, sanitize errors, enforce ConfigKey type`
-- Phase 8a: `29d51ea` — `feat: add tauri-plugin-store + config module for API key storage`
-- Phase 7: `37651fa` — `fix: include project_id in SessionRepo.update SQL and page update payload`
+- Latest: `5bb99ef` — `fix: chat — stale closure ref, concurrency guard, named constants, empty state guard`
+- Phase 8b: `e30b9b6` — `fix: chat — clearChat resets error, bounce animation, hide empty state when unconfigured`
+- Phase 8b: `e2372c4` — `feat: AI chatbox — useChat hook, chat page, nav item`
+- Phase 8b: `296b7b8` — `fix: prompt suggester — save error handling, backdrop dismiss, button layout`
+- Phase 8b: `fe81606` — `feat: add AI prompt suggester to Prompt Vault`
+- Phase 8b: `84e145f` — `fix: PRD editor — isGenerating guard, type imports, save guard`
+- Phase 8b: `e890327` — `feat: add AI generate button to PRD editor`
+- Phase 8a: `2daceeb` — `docs: update CHECKPOINT.md for Phase 8a AI Integration Foundation`
 
 ## Database Layer (Phase 2 — selesai)
 
@@ -225,12 +227,96 @@ Notes:
 - `testApiKey` in settings page does NOT distinguish 401 vs 429 (both show "invalid")
 - `AnthropicMessage` type defined separately in useAI.ts (discriminated union) and settings page (loose) — consolidate if a shared lib/anthropic-types.ts is introduced
 
-## Phase 8b Candidates
+## AI per Modul (Phase 8b — selesai)
+
+```
+hooks/
+└── useChat.ts             — chat state: messages, sendMessage, clearChat, selectedProjectId
+                             buildContext() fetches project+PRD+3 sessions for AI context
+                             messagesRef for stale-closure-safe history; generatingRef for concurrency guard
+                             MAX_HISTORY_MESSAGES=10, MAX_CONTEXT_SESSIONS=3 named constants
+                             errorCleared flag pattern: clearChat() masks useAI error (no clearError on useAI)
+
+pages/chat/
+└── index.tsx              — full-height flex layout, scrollable message area
+                             user bubble (right, rgba(139,0,0,0.2)) + AI bubble (left, #111111)
+                             loading: 3 staggered animate-bounce dots
+                             project context selector (ProjectRepo.getAll on mount)
+                             Enter-to-send input; auto-scroll via messagesEndRef
+```
+
+PRDEditor changes:
+- `components/prd/PRDEditor.tsx` — "✨ Generate with AI" button in toolbar
+  - Uses `useAI()` (isLoading aliased as isGenerating)
+  - Guard: `if (!isConfigured || isGenerating) return`
+  - Result → sets prdContent state (editable after)
+  - Save button disabled when isGenerating OR saving
+
+Prompt Vault changes:
+- `pages/prompts/index.tsx` — "✨ Suggest Prompt" button in toolbar
+  - Gets active project context → calls AI → parses JSON (try/catch)
+  - Modal with 3 suggested prompt cards
+  - Each card: save via `createPrompt()` from usePrompts (auto-refresh list)
+  - After save: button shows "✓ Tersimpan", modal stays open
+  - Backdrop click dismisses modal; `ai_tool: "claude"` hardcoded (per spec)
+
+Layout changes:
+- `components/Layout.tsx` — "AI Chat" nav item (MessageSquare icon) added after Session Log
+
+Notes:
+- `isConfigured` check is consistent across all 3 features (PRD, Prompts, Chat)
+- AI error displayed in `text-[#C41E3A]` font-mono across all consumers
+- Chat history sent to API as formatted string (not separate messages array — `generate()` takes 2 string args only)
+
+## Phase 9 Candidates
 
 Target fase berikutnya (belum ada spec):
 - Dashboard / Home — `pages/index.tsx` (summary stats, recent sessions, quick actions)
-- AI Generate PRD — gunakan `useAI` hook di PRD Manager untuk generate draft dari judul project
-- AI Summarize Session — gunakan `useAI` hook di Session Log untuk summarize session
+- AI Summarize Session — "✨ Summarize" button in Session Log to generate summary from session title/notes
+
+## Smoke Test Checklist (Phase 8b — AI per Modul)
+
+Jalankan `npx tauri dev` dari `d:\Forge-Lab\forge` lalu verifikasi:
+
+**PRD Generator:**
+
+| Test | Expected |
+|------|----------|
+| Buka PRD Manager, pilih project | Editor tampil |
+| API key belum ada → toolbar PRD | Teks "Konfigurasi API key di Settings" muncul (bukan tombol) |
+| Setelah API key disimpan → buka PRD editor | Tombol "✨ Generate with AI" muncul di toolbar |
+| Klik "✨ Generate with AI" | Tombol berubah "Generating...", disabled |
+| Generate selesai | Textarea PRD terisi draft markdown dengan 6 section |
+| Klik Save setelah generate | PRD tersimpan, "Tersimpan HH:MM" muncul |
+| Klik Save saat AI generating | Save button disabled (tidak bisa submit) |
+
+**Prompt Suggester:**
+
+| Test | Expected |
+|------|----------|
+| Buka Prompt Vault | Tombol "✨ Suggest Prompt" muncul di toolbar |
+| Klik tanpa API key | Error "Konfigurasi API key di Settings" muncul merah |
+| Klik dengan API key valid | Tombol "Generating...", modal muncul dengan 3 kartu prompt |
+| Klik di luar modal | Modal tertutup |
+| Klik "Save to Vault" pada satu kartu | Tombol berubah "✓ Tersimpan", prompt muncul di vault |
+| Kartu tersimpan | Button disabled, modal masih terbuka |
+| Klik "Tutup" | Modal tertutup |
+| Cek Prompt Vault setelah save | Prompt AI tersimpan dengan ai_tool "Claude" |
+
+**AI Chatbox:**
+
+| Test | Expected |
+|------|----------|
+| Sidebar → "AI Chat" muncul | Nav item dengan MessageSquare icon |
+| Klik "AI Chat" | Halaman /chat terbuka, empty state "Halo! Saya AI Assistant Forge." |
+| Tanpa API key → ketik pesan → Enter | Error "API key belum dikonfigurasi." tampil |
+| Dengan API key → ketik pesan → Enter | Pesan user muncul (kanan, merah gelap) |
+| AI menjawab | AI bubble muncul (kiri, surface), newlines preserved |
+| Loading state | 3 dots bounce dengan stagger |
+| Pilih project di dropdown | Context project masuk ke system prompt AI |
+| Multi-turn: kirim 2-3 pesan | AI mempertahankan konteks percakapan |
+| Klik "Clear" | Chat bersih, kembali ke empty state |
+| Error lalu Clear | Error hilang setelah Clear |
 
 ## Smoke Test Checklist (Phase 8a — AI Integration Foundation)
 
