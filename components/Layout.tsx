@@ -8,6 +8,7 @@ import {
   BookMarked,
   Clock,
   CreditCard,
+  Settings,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -28,7 +29,8 @@ type PageKey =
   | "progress"
   | "prompts"
   | "sessions"
-  | "billing";
+  | "billing"
+  | "settings";
 
 const PAGE_TITLES: Record<PageKey, string> = {
   dashboard: "Dashboard",
@@ -37,6 +39,7 @@ const PAGE_TITLES: Record<PageKey, string> = {
   prompts: "Prompt Vault",
   sessions: "Session Log",
   billing: "Billing Tracker",
+  settings: "Settings",
 };
 
 function getPageKey(pathname: string): PageKey {
@@ -45,6 +48,7 @@ function getPageKey(pathname: string): PageKey {
   if (pathname.startsWith("/prompts")) return "prompts";
   if (pathname.startsWith("/sessions")) return "sessions";
   if (pathname.startsWith("/billing")) return "billing";
+  if (pathname.startsWith("/settings")) return "settings";
   return "dashboard";
 }
 
@@ -116,6 +120,12 @@ export default function Layout({ children }: LayoutProps) {
       href: "/billing",
       icon: <CreditCard className="h-4 w-4" />,
       key: "billing",
+    },
+    {
+      label: "Settings",
+      href: "/settings",
+      icon: <Settings className="h-4 w-4" />,
+      key: "settings",
     },
   ];
 
