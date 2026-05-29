@@ -149,14 +149,18 @@ Suggest 3 prompt yang berguna untuk fase ini.`;
   };
 
   const handleSaveToVault = async (suggestion: SuggestedPrompt, index: number) => {
-    await createPrompt({
-      title: suggestion.title,
-      content: suggestion.content,
-      ai_tool: "claude",
-      category: suggestion.category || null,
-      tags: null,
-    });
-    setSavedIndexes((prev) => new Set(prev).add(index));
+    try {
+      await createPrompt({
+        title: suggestion.title,
+        content: suggestion.content,
+        ai_tool: "claude",
+        category: suggestion.category || null,
+        tags: null,
+      });
+      setSavedIndexes((prev) => new Set(prev).add(index));
+    } catch {
+      setAiError("Gagal menyimpan prompt. Coba lagi.");
+    }
   };
 
   const handleCloseModal = () => {
@@ -277,8 +281,8 @@ Suggest 3 prompt yang berguna untuk fase ini.`;
 
       {/* AI Suggest Prompt Modal */}
       {suggestedPrompts !== null && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-[#111111] border border-[rgba(139,0,0,0.3)] rounded-[6px] w-full max-w-lg p-6">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={handleCloseModal}>
+          <div className="bg-[#111111] border border-[rgba(139,0,0,0.3)] rounded-[6px] w-full max-w-lg p-6" onClick={(e) => e.stopPropagation()}>
             {/* Modal header */}
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-[#F0F0F0]">
@@ -306,19 +310,20 @@ Suggest 3 prompt yang berguna untuk fase ini.`;
                   <p className="text-sm text-[#AAAAAA] line-clamp-3">
                     {suggestion.content}
                   </p>
-                  <div className="flex items-center justify-between gap-2">
-                    {suggestion.category ? (
-                      <span className="font-mono text-[10px] text-[#666666] border border-[rgba(139,0,0,0.2)] px-1.5 py-0.5 rounded">
-                        {suggestion.category}
-                      </span>
-                    ) : (
-                      <span />
-                    )}
+                  {/* card bottom — category + save button stacked */}
+                  <div className="flex flex-col gap-2">
+                    <div>
+                      {suggestion.category ? (
+                        <span className="font-mono text-[10px] text-[#666666] border border-[rgba(139,0,0,0.2)] px-1.5 py-0.5 rounded">
+                          {suggestion.category}
+                        </span>
+                      ) : null}
+                    </div>
                     <button
                       type="button"
-                      onClick={() => handleSaveToVault(suggestion, index)}
+                      onClick={() => void handleSaveToVault(suggestion, index)}
                       disabled={savedIndexes.has(index)}
-                      className="w-full rounded-[4px] bg-[#8B0000] hover:bg-[#C41E3A] px-3 py-1.5 font-mono text-xs text-[#F0F0F0] transition-colors disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-[#8B0000]"
+                      className="w-full rounded-[4px] bg-[#8B0000] px-3 py-1.5 font-mono text-xs text-white hover:bg-[#C41E3A] transition-colors disabled:opacity-50"
                     >
                       {savedIndexes.has(index) ? "✓ Tersimpan" : "Save to Vault"}
                     </button>
