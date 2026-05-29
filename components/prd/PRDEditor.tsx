@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Save } from "lucide-react";
-import type { Project, Prd } from "@/lib/database";
+import type { Project, Prd, Phase, ProjectStatus } from "@/lib/database";
 import type { PrdFormData } from "@/hooks/usePRD";
 import { PHASES, PHASE_LABELS, PROJECT_STATUSES } from "@/lib/database";
 import { useAI } from "@/hooks/useAI";
@@ -51,7 +51,7 @@ export function PRDEditor({
   }, [project.id, prd?.id]);
 
   const handleGenerate = async () => {
-    if (!isConfigured) return;
+    if (!isConfigured || isGenerating) return;
     const systemPrompt = `You are a senior product manager. Generate a concise PRD in Bahasa Indonesia.
 Format:
 ## Latar Belakang
@@ -131,7 +131,7 @@ Generate PRD untuk project ini.`;
             )}
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || isGenerating}
               className="inline-flex items-center gap-1.5 rounded-[4px] bg-[#8B0000] px-3 py-1.5 text-xs font-mono text-white transition-colors hover:bg-[#C41E3A] disabled:opacity-50"
             >
               <Save size={12} />
@@ -266,6 +266,3 @@ Generate PRD untuk project ini.`;
   );
 }
 
-// Type aliases untuk dipakai di JSX tanpa import ganda
-type Phase = import("@/lib/database").Phase;
-type ProjectStatus = import("@/lib/database").ProjectStatus;
