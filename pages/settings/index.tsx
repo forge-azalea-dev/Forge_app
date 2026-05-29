@@ -45,6 +45,7 @@ export default function SettingsPage() {
   const [showKey, setShowKey] = useState(false);
   const [status, setStatus] = useState<ConnectionStatus>("unconfigured");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [messageType, setMessageType] = useState<"success" | "error" | null>(null);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
 
@@ -56,24 +57,31 @@ export default function SettingsPage() {
           setStatus("saved");
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setMessageType("error");
+        setStatusMessage("Gagal memuat konfigurasi tersimpan.");
+      });
   }, []);
 
   const handleSave = async () => {
     setSaving(true);
     setStatusMessage(null);
+    setMessageType(null);
     try {
       const trimmed = apiKey.trim();
       if (trimmed) {
         await setConfig(ConfigKeys.ANTHROPIC_API_KEY, trimmed);
         setStatus("saved");
+        setMessageType("success");
         setStatusMessage("API key tersimpan.");
       } else {
         await deleteConfig(ConfigKeys.ANTHROPIC_API_KEY);
         setStatus("unconfigured");
+        setMessageType("success");
         setStatusMessage("API key dihapus.");
       }
     } catch (err) {
+      setMessageType("error");
       setStatusMessage(
         err instanceof Error ? err.message : "Gagal menyimpan API key.",
       );
@@ -85,25 +93,30 @@ export default function SettingsPage() {
   const handleTestConnection = async () => {
     const trimmed = apiKey.trim();
     if (!trimmed) {
+      setMessageType("error");
       setStatusMessage("Masukkan API key terlebih dahulu.");
       return;
     }
     setTesting(true);
     setStatus("testing");
     setStatusMessage(null);
+    setMessageType(null);
     try {
       const ok = await testApiKey(trimmed);
       if (ok) {
         setStatus("connected");
+        setMessageType(null);
         setStatusMessage(null);
       } else {
         setStatus("invalid");
+        setMessageType("error");
         setStatusMessage(
           "API key tidak valid atau tidak dapat terhubung ke Anthropic.",
         );
       }
     } catch {
       setStatus("invalid");
+      setMessageType("error");
       setStatusMessage(
         "Gagal terhubung ke Anthropic API. Periksa koneksi internet.",
       );
@@ -202,13 +215,7 @@ export default function SettingsPage() {
         </div>
 
         {statusMessage && (
-          <p
-            className={`font-mono text-xs ${
-              status === "connected" || statusMessage.includes("tersimpan")
-                ? "text-[#22c55e]"
-                : "text-[#C41E3A]"
-            }`}
-          >
+          <p className={`font-mono text-xs ${messageType === "success" ? "text-[#22c55e]" : "text-[#C41E3A]"}`}>
             {statusMessage}
           </p>
         )}
