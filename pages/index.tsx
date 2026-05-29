@@ -1,4 +1,27 @@
+import { useEffect, useState } from "react";
 import { InsightCard } from "@/components/InsightCard";
+import {
+  ProjectRepo,
+  SessionRepo,
+  BillingRepo,
+  PHASE_LABELS,
+} from "@/lib/database";
+import type { Project, Session, Billing } from "@/lib/database";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const RECENT_SESSIONS_LIMIT = 3;
+const MAX_PROJECT_LIST = 3;
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface DashboardData {
+  projects: Project[];
+  sessions: Session[];
+  billings: Billing[];
+}
+
+// ─── Style constants ──────────────────────────────────────────────────────────
 
 const cardBaseClasses =
   "rounded-[6px] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-[0_0_8px_rgba(139,0,0,0.3)]";
@@ -6,7 +29,42 @@ const cardBaseClasses =
 const cardAccentClasses =
   "relative pl-3 before:absolute before:inset-y-0 before:left-0 before:w-[2px] before:bg-[color:var(--color-primary)] before:content-['']";
 
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export default function DashboardPage() {
+  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<DashboardData>({
+    projects: [],
+    sessions: [],
+    billings: [],
+  });
+
+  useEffect(() => {
+    async function loadDashboardData() {
+      try {
+        const [projects, sessions, billings] = await Promise.all([
+          ProjectRepo.getActive(),
+          SessionRepo.getAll(),
+          BillingRepo.getAll(),
+        ]);
+        setDashboardData({ projects, sessions, billings });
+      } catch {
+        // Leave empty arrays on error — no banner needed on dashboard
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadDashboardData();
+  }, []);
+
+  const { projects, sessions, billings } = dashboardData;
+
+  // Nearest active billing with a next_billing date
+  const upcomingBilling = billings
+    .filter((b) => b.status === "active" && b.next_billing !== null)
+    .sort((a, b) => (a.next_billing! < b.next_billing! ? -1 : 1))[0] ?? null;
+
   return (
     <div className="space-y-6">
       <header className="space-y-1">
@@ -19,6 +77,7 @@ export default function DashboardPage() {
       </header>
 
       <section className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
+        {/* ── Active Projects ───────────────────────────────────────────── */}
         <article
           className={`${cardBaseClasses} ${cardAccentClasses} overflow-hidden`}
         >
@@ -31,13 +90,36 @@ export default function DashboardPage() {
                 snapshot
               </span>
             </div>
-            <p className="text-xs text-[color:var(--color-muted)]">
-              Ringkasan project yang sedang jalan. Integrasi detail datang di
-              fase berikutnya.
-            </p>
+
+            {loading ? (
+              <p className="font-mono text-xs text-[color:var(--color-muted)]">
+                Memuat...
+              </p>
+            ) : projects.length === 0 ? (
+              <p className="text-xs text-[color:var(--color-muted)]">
+                Belum ada project aktif.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs text-[color:var(--color-muted)]">
+                  {projects.length} project aktif
+                </p>
+                <ul className="space-y-0.5">
+                  {projects.slice(0, MAX_PROJECT_LIST).map((project) => (
+                    <li
+                      key={project.id}
+                      className="font-mono text-xs text-[color:var(--color-muted)]"
+                    >
+                      - {project.name} [{project.stack ?? "—"}]
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </article>
 
+        {/* ── Current Phase ─────────────────────────────────────────────── */}
         <article
           className={`${cardBaseClasses} ${cardAccentClasses} overflow-hidden`}
         >
@@ -50,13 +132,29 @@ export default function DashboardPage() {
                 pipeline
               </span>
             </div>
-            <p className="text-xs text-[color:var(--color-muted)]">
-              Visualisasi posisi Forge di pipeline: PRD → UI/UX → Frontend →
-              Backend → Integration → Deploy.
-            </p>
+
+            {loading ? (
+              <p className="font-mono text-xs text-[color:var(--color-muted)]">
+                Memuat...
+              </p>
+            ) : projects.length === 0 ? (
+              <p className="text-xs text-[color:var(--color-muted)]">
+                Belum ada project aktif.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <p className="font-mono text-sm font-semibold text-[color:var(--color-text)]">
+                  {PHASE_LABELS[projects[0].phase]}
+                </p>
+                <p className="text-xs text-[color:var(--color-muted)]">
+                  {projects[0].name}
+                </p>
+              </div>
+            )}
           </div>
         </article>
 
+        {/* ── Recent Sessions ───────────────────────────────────────────── */}
         <article
           className={`${cardBaseClasses} ${cardAccentClasses} overflow-hidden`}
         >
@@ -69,13 +167,31 @@ export default function DashboardPage() {
                 timeline
               </span>
             </div>
-            <p className="text-xs text-[color:var(--color-muted)]">
-              Nanti akan terisi dengan log sesi kerja terakhir dan context
-              penting per sesi.
-            </p>
+
+            {loading ? (
+              <p className="font-mono text-xs text-[color:var(--color-muted)]">
+                Memuat...
+              </p>
+            ) : sessions.length === 0 ? (
+              <p className="text-xs text-[color:var(--color-muted)]">
+                Belum ada sesi.
+              </p>
+            ) : (
+              <ul className="space-y-0.5">
+                {sessions.slice(0, RECENT_SESSIONS_LIMIT).map((session) => (
+                  <li
+                    key={session.id}
+                    className="font-mono text-xs text-[color:var(--color-muted)]"
+                  >
+                    - {session.title}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </article>
 
+        {/* ── Billing Reminder ──────────────────────────────────────────── */}
         <article
           className={`${cardBaseClasses} ${cardAccentClasses} overflow-hidden`}
         >
@@ -88,10 +204,26 @@ export default function DashboardPage() {
                 upcoming
               </span>
             </div>
-            <p className="text-xs text-[color:var(--color-muted)]">
-              Placeholder untuk pengingat subscription penting: Claude Pro,
-              hosting, dan tool lain yang dipakai Forge.
-            </p>
+
+            {loading ? (
+              <p className="font-mono text-xs text-[color:var(--color-muted)]">
+                Memuat...
+              </p>
+            ) : upcomingBilling === null ? (
+              <p className="text-xs text-[color:var(--color-muted)]">
+                Tidak ada tagihan mendatang.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <p className="font-mono text-xs text-[color:var(--color-muted)]">
+                  {upcomingBilling.name} — {upcomingBilling.currency}{" "}
+                  {upcomingBilling.amount}/{upcomingBilling.cycle}
+                </p>
+                <p className="text-xs text-[color:var(--color-muted)]">
+                  {upcomingBilling.next_billing}
+                </p>
+              </div>
+            )}
           </div>
         </article>
       </section>
@@ -100,4 +232,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
