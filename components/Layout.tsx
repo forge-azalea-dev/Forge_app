@@ -143,21 +143,21 @@ export default function Layout({ children }: LayoutProps) {
     <div className="flex min-h-screen bg-[color:var(--color-bg)] text-[color:var(--color-text)]">
       <aside className="flex h-screen w-[220px] flex-col border-r border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
         <div className="flex items-center gap-2 px-4 py-4">
-          <div className="relative h-8 w-8 overflow-hidden rounded-[6px] bg-[color:var(--color-bg)] shadow-[0_0_8px_rgba(139,0,0,0.3)]">
+          <div className="relative h-12 w-12 overflow-hidden rounded-[6px] bg-[color:var(--color-bg)] shadow-[0_0_8px_rgba(139,0,0,0.3)]">
             <Image
               src="/forge-logo.png"
               alt="Forge logo"
               fill
-              sizes="32px"
+              sizes="48px"
               className="object-contain"
               priority
             />
           </div>
           <div className="flex flex-col">
-            <span className="font-mono text-xs font-semibold tracking-[0.15em] text-[color:var(--color-accent)]">
+            <span className="font-mono text-lg font-semibold tracking-[0.15em] text-[color:var(--color-accent)]">
               FORGE
             </span>
-            <span className="font-mono text-[10px] text-[color:var(--color-muted)]">
+            <span className="font-mono text-[15px] text-[color:var(--color-muted)]">
               Azalea_Dev WorkFlow
             </span>
           </div>
