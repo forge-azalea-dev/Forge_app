@@ -1,6 +1,6 @@
 # Forge Checkpoint
 
-Last updated: 2026-05-29 (Phase 8b implemented, pending smoke test)
+Last updated: 2026-05-29 (Phase 8b selesai + hotfix store race condition)
 
 ## Current Status
 
@@ -13,6 +13,7 @@ Last updated: 2026-05-29 (Phase 8b implemented, pending smoke test)
 - Phase 7 selesai: Session Log page fully functional (CRUD + expand/collapse detail + project filter + duration badge).
 - Phase 8a selesai: AI Integration Foundation — tauri-plugin-store, config module, useAI hook, Settings page.
 - Phase 8b selesai: AI per Modul — PRD Generator, Prompt Suggester, AI Chatbox (useChat hook + /chat page).
+- Hotfix 8b: store race condition di `lib/config.ts` — cache promise bukan value (commit `b21d00b`).
 - Shared layout sudah terpasang (`components/Layout.tsx`) dengan:
   - sidebar navigation (Dashboard, PRD, Progress, Prompts, Sessions, AI Chat, Billing, Settings)
   - topbar title + realtime timestamp (hydration-safe)
@@ -33,7 +34,9 @@ Last updated: 2026-05-29 (Phase 8b implemented, pending smoke test)
 
 ## Latest Commit
 
-- Latest: `5bb99ef` — `fix: chat — stale closure ref, concurrency guard, named constants, empty state guard`
+- Latest: `b21d00b` — `fix: config store — cache promise to prevent concurrent load() race condition`
+- Phase 8b docs: `7f01731` — `docs: update CHECKPOINT.md for Phase 8b AI per Modul`
+- Phase 8b: `5bb99ef` — `fix: chat — stale closure ref, concurrency guard, named constants, empty state guard`
 - Phase 8b: `e30b9b6` — `fix: chat — clearChat resets error, bounce animation, hide empty state when unconfigured`
 - Phase 8b: `e2372c4` — `feat: AI chatbox — useChat hook, chat page, nav item`
 - Phase 8b: `296b7b8` — `fix: prompt suggester — save error handling, backdrop dismiss, button layout`
@@ -73,6 +76,38 @@ pages/billing/
 ```
 
 Seed data: Claude Pro (USD 20/month) auto-inserted on first launch.
+
+## Bug Fixes & Hotfixes
+
+### Hotfix — Store Race Condition (commit `b21d00b`)
+**File:** `lib/config.ts`
+**Gejala:** App menampilkan "Internal Server Error" saat pertama buka. Terminal log: `"Persisting failed: Another write batch or compaction is already active"`.
+**Penyebab:** Phase 8b menambah `useAI` ke 3 komponen (PRDEditor, Prompts page, useChat) yang semua mount bersamaan saat startup → 3 concurrent `getConfig()` → 3 concurrent `getStore()` → semuanya lihat `_store === null` sebelum yang pertama resolve → 3 `load()` dipanggil sekaligus → `tauri-plugin-store` tidak bisa handle concurrent open pada file yang sama.
+**Fix:** Ganti cache dari resolved value ke **promise**:
+```typescript
+// SEBELUM (bug) — cache value, race condition kalau 2+ calls concurrent:
+let _store: Awaited<ReturnType<typeof load>> | null = null;
+async function getStore() {
+  if (!_store) _store = await load(STORE_FILE, ...); // call ke-2 masuk sini sebelum ke-1 resolve
+  return _store;
+}
+
+// SESUDAH (fix) — cache promise, concurrent calls reuse promise yang sama:
+let _storePromise: ReturnType<typeof load> | null = null;
+async function getStore() {
+  if (!_storePromise) _storePromise = load(STORE_FILE, ...); // call ke-2 skip ini, langsung return
+  return _storePromise;
+}
+```
+
+### Dev Server Note — Stale `.next` Cache
+**Gejala:** `ENOENT: no such file or directory, open '.next\dev\server\pages\_app\build-manifest.json'`
+**Penyebab:** `npx next build` (dijalankan subagent untuk cek TypeScript) meninggalkan `.next` dalam format production static export. `npx tauri dev` menggunakan `next dev` (Turbopack) yang expect format berbeda.
+**Fix:** Selalu hapus `.next` sebelum restart dev server:
+```powershell
+Remove-Item -Recurse -Force .next
+npx tauri dev
+```
 
 ## Known Notes
 
