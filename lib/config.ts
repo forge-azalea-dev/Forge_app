@@ -8,11 +8,11 @@ export const ConfigKeys = {
 
 type ConfigKey = (typeof ConfigKeys)[keyof typeof ConfigKeys];
 
-let _store: Awaited<ReturnType<typeof load>> | null = null;
+let _storePromise: ReturnType<typeof load> | null = null;
 
 async function getStore() {
-  if (!_store) _store = await load(STORE_FILE, { autoSave: false, defaults: {} });
-  return _store;
+  if (!_storePromise) _storePromise = load(STORE_FILE, { autoSave: false, defaults: {} });
+  return _storePromise;
 }
 
 export async function getConfig(key: ConfigKey): Promise<string | null> {
