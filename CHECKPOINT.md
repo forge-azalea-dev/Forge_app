@@ -1,6 +1,6 @@
 # Forge Checkpoint
 
-Last updated: 2026-05-30 (Phase 10: Tech Stack Manager + Todo List selesai)
+Last updated: 2026-05-30 (Hotfix: duplicate Layout wrapper di TodosPage)
 
 ## Current Status
 
@@ -45,6 +45,7 @@ Last updated: 2026-05-30 (Phase 10: Tech Stack Manager + Todo List selesai)
 
 ## Latest Commit
 
+- Hotfix: `d3f3a6b` — `fix: remove duplicate Layout wrapper from TodosPage`
 - Phase 10: `6e486db` — `feat: add Todo List page with per-project todos and nav item`
 - Phase 10: `a1b690d` — `feat: add todos table, types, and TodoRepo`
 - Phase 10: `de47a59` — `feat: add StackSelector component with per-category badge UI`
