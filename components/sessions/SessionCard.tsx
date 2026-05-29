@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { useAI } from "@/hooks/useAI";
+import type { Session } from "@/lib/database";
 
 interface SessionCardProps {
   session: Session;
@@ -51,18 +52,16 @@ export function SessionCard({
 }: SessionCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [errorVisible, setErrorVisible] = useState(true);
   const { isConfigured, isLoading: isGenerating, error: aiError, generate } = useAI();
   const duration = formatDuration(session.duration);
 
   const handleSummarize = async () => {
     if (!isConfigured || isGenerating) return;
     setAiSummary(null);
-    try {
-      const result = await generate(SYSTEM_PROMPT, buildSummarizePrompt(session, projectName));
-      if (result) setAiSummary(result);
-    } catch (err) {
-      console.error("Summarize failed:", err);
-    }
+    setErrorVisible(true);
+    const result = await generate(SYSTEM_PROMPT, buildSummarizePrompt(session, projectName));
+    if (result) setAiSummary(result);
   };
 
   return (
@@ -212,13 +211,20 @@ export function SessionCard({
       )}
 
       {/* AI error panel */}
-      {aiError !== null && (
-        <p
+      {aiError !== null && errorVisible && (
+        <div
           onClick={(e) => e.stopPropagation()}
-          className="font-mono text-[10px] text-[#C41E3A] mt-1"
+          className="mt-1 flex items-start justify-between gap-2"
         >
-          {aiError}
-        </p>
+          <p className="font-mono text-[10px] text-[#C41E3A]">{aiError}</p>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setErrorVisible(false); }}
+            className="shrink-0 font-mono text-[9px] text-[#555555] hover:text-[#F0F0F0] transition-colors"
+          >
+            ✕
+          </button>
+        </div>
       )}
 
       {/* Expand/collapse indicator — only when there is content to show */}
@@ -233,4 +239,3 @@ export function SessionCard({
   );
 }
 
-type Session = import("@/lib/database").Session;
