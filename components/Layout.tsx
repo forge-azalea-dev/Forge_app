@@ -209,7 +209,7 @@ export default function Layout({ children }: LayoutProps) {
             <span className="font-mono uppercase tracking-[0.12em]">
               build
             </span>
-            <span className="font-mono">v0.1.2</span>
+            <span className="font-mono">v0.1.3</span>
           </div>
         </div>
       </aside>

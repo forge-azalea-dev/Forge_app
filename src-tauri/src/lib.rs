@@ -22,7 +22,9 @@ pub fn run() {
         tauri::async_runtime::spawn(async move {
           if let Ok(updater) = handle.updater() {
             if let Ok(Some(update)) = updater.check().await {
-              let _ = update.download_and_install(|_, _| {}, || {}).await;
+              if update.download_and_install(|_, _| {}, || {}).await.is_ok() {
+                handle.restart();
+              }
             }
           }
         });

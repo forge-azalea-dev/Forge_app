@@ -1,6 +1,6 @@
 # Forge Checkpoint
 
-Last updated: 2026-05-30 (v0.1.2 release — Phase 10 + hotfix Layout wrapper)
+Last updated: 2026-05-30 (v0.1.3 — fix auto-updater restart setelah install)
 
 ## Current Status
 
@@ -45,6 +45,7 @@ Last updated: 2026-05-30 (v0.1.2 release — Phase 10 + hotfix Layout wrapper)
 
 ## Latest Commit
 
+- v0.1.3: fix auto-updater — tambah `handle.restart()` setelah `download_and_install` sukses
 - v0.1.2: bump version + fix sidebar build label
 - Hotfix: `d3f3a6b` — `fix: remove duplicate Layout wrapper from TodosPage`
 - Phase 10: `6e486db` — `feat: add Todo List page with per-project todos and nav item`
