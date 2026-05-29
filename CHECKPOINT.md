@@ -1,6 +1,6 @@
 # Forge Checkpoint
 
-Last updated: 2026-05-29 (Phase 8d selesai — AI Summarize per Session Card)
+Last updated: 2026-05-29 (Phase 9 selesai — Polish & Bug Fix)
 
 ## Current Status
 
@@ -16,6 +16,7 @@ Last updated: 2026-05-29 (Phase 8d selesai — AI Summarize per Session Card)
 - Hotfix 8b: store race condition di `lib/config.ts` — cache promise bukan value (commit `b21d00b`).
 - Phase 8c selesai: Dashboard AI Insights — "✨ Generate Insights" button + InsightCard component + markdown renderer.
 - Phase 8d selesai: AI Summarize per Session Card — per-card "✨ Summarize" button, inline AI RINGKASAN panel, dismissable error.
+- Phase 9 selesai: Polish & Bug Fix — dashboard live data, form accessibility, consistent spacing.
 - Shared layout sudah terpasang (`components/Layout.tsx`) dengan:
   - sidebar navigation (Dashboard, PRD, Progress, Prompts, Sessions, AI Chat, Billing, Settings)
   - topbar title + realtime timestamp (hydration-safe)
@@ -36,6 +37,10 @@ Last updated: 2026-05-29 (Phase 8d selesai — AI Summarize per Session Card)
 
 ## Latest Commit
 
+- Phase 9: `84e004d` — `style: standardize page spacing to space-y-6`
+- Phase 9: `92dc7d7` — `fix: add id/htmlFor to all form fields for accessibility`
+- Phase 9: `727a7b0` — `fix: dashboard — type-guard billing filter, getRecent for sessions`
+- Phase 9: `bf1180c` — `feat: connect dashboard cards to real DB data`
 - Phase 8d: `9323939` — `fix: session card AI — dismiss error, clean import, remove dead try/catch`
 - Phase 8d: `1c82f9f` — `feat: add AI summarize button to session card`
 - Phase 8c: `87a3281` — `fix: dashboard insights — error handling, list indent, padding, dead constants`
@@ -368,11 +373,65 @@ pages/
 - `import type { Session }` at top-level (not inline type alias at bottom)
 - Per-card `aiSummary` and `errorVisible` state — completely independent across cards
 
-## Phase 9 Candidates
+## Phase 9 — Polish & Bug Fix (selesai)
+
+### Dashboard Live Data (commits `bf1180c` + `727a7b0`)
+
+4 placeholder cards di `pages/index.tsx` sekarang terhubung ke DB nyata:
+
+| Card | Data Source | Empty State |
+|------|-------------|-------------|
+| Active Projects | `ProjectRepo.getActive()` | "Belum ada project aktif." |
+| Current Phase | `projects[0].phase` → PHASE_LABELS | "Belum ada project aktif." |
+| Recent Sessions | `SessionRepo.getRecent(3)` | "Belum ada sesi." |
+| Billing Reminder | `BillingRepo.getAll()` filter active + sort next_billing | "Tidak ada tagihan mendatang." |
+
+- Single `useEffect` + `Promise.all` fetch semua 3 repos sekaligus on mount
+- Single `loading` boolean state — setiap card tampil "Memuat..." saat loading
+- `SessionRepo.getRecent(n)` ditambah ke repo (LIMIT query, bounded IPC)
+- Billing filter menggunakan type-guard predicate: `(b): b is Billing & { next_billing: string }`
+- Konstanta module-level: `RECENT_SESSIONS_LIMIT = 3`, `MAX_PROJECT_LIST = 3`
+
+### Form Accessibility (commit `92dc7d7`)
+
+29 pasang `id`/`htmlFor` ditambah ke 4 form components:
+
+| File | Pairs Added |
+|------|-------------|
+| `components/sessions/SessionForm.tsx` | 6 (title, project, duration, summary, decisions, next-steps) |
+| `components/billing/BillingForm.tsx` | 10 (name, amount, currency, cycle, date, status, category, url, description, notes) |
+| `components/prompts/PromptForm.tsx` | 4 (title, ai-tool, category, content) |
+| `components/prd/PRDEditor.tsx` | 9 (project-name, title, stack, phase, status, figma-url, repo-url, description, content) |
+
+Fix DevTools accessibility warnings: label tidak ter-asosiasi dengan field.
+
+### Consistent Spacing (commit `84e004d`)
+
+Semua pages sekarang menggunakan `space-y-6` pada outermost div:
+- `pages/sessions/index.tsx`: `space-y-4` → `space-y-6`
+- `pages/progress/index.tsx`: `space-y-4` → `space-y-6`
+- `pages/prompts/index.tsx`: `space-y-4` → `space-y-6`
+
+Layout sudah `px-6 py-4` di main content area — pages tidak perlu tambah padding sendiri.
+
+### Smoke Test Checklist (Phase 9)
+
+| Test | Expected |
+|------|----------|
+| Buka Dashboard, ada project aktif | "Active Projects" card: count + nama project |
+| Buka Dashboard, ada sessions | "Recent Sessions" card: 3 judul sesi terakhir |
+| Buka Dashboard, ada billing aktif dengan next_billing | "Billing Reminder" card: nama + tanggal terdekat |
+| Buka Dashboard, belum ada data | Semua card tampil empty state yang sesuai |
+| Buka Dashboard, loading | Semua card tampil "Memuat..." |
+| Buka form Session/Billing/Prompt/PRD | Klik label → focus ke field yang tepat (accessibility) |
+| DevTools Accessibility tab | Tidak ada warning "Label has no associated form field" |
+| Semua pages (Sessions, Progress, Prompts) | Spacing antar section konsisten |
+
+## Phase 10 Candidates
 
 Target fase berikutnya (belum ada spec):
-- Dashboard Live Data — isi 4 placeholder cards dengan data real (active project count, current phase, recent sessions, upcoming billing)
 - UI/UX Notes page — link Figma/Stitch + design decision notes per project
+- Export/backup data — export DB ke JSON atau CSV
 
 ## Smoke Test Checklist (Phase 8d — AI Summarize per Session Card)
 
