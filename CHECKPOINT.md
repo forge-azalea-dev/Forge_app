@@ -1,6 +1,6 @@
 # Forge Checkpoint
 
-Last updated: 2026-05-29 (Phase 9 selesai — Polish & Bug Fix)
+Last updated: 2026-05-29 (Production Build v0.1.0 berhasil)
 
 ## Current Status
 
@@ -17,6 +17,7 @@ Last updated: 2026-05-29 (Phase 9 selesai — Polish & Bug Fix)
 - Phase 8c selesai: Dashboard AI Insights — "✨ Generate Insights" button + InsightCard component + markdown renderer.
 - Phase 8d selesai: AI Summarize per Session Card — per-card "✨ Summarize" button, inline AI RINGKASAN panel, dismissable error.
 - Phase 9 selesai: Polish & Bug Fix — dashboard live data, form accessibility, consistent spacing.
+- Production Build v0.1.0 selesai: Windows installer (.msi + .exe) berhasil di-generate.
 - Shared layout sudah terpasang (`components/Layout.tsx`) dengan:
   - sidebar navigation (Dashboard, PRD, Progress, Prompts, Sessions, AI Chat, Billing, Settings)
   - topbar title + realtime timestamp (hydration-safe)
@@ -37,6 +38,7 @@ Last updated: 2026-05-29 (Phase 9 selesai — Polish & Bug Fix)
 
 ## Latest Commit
 
+- Production Build: (TBD after commit) — `build: add tauri script to package.json, production build v0.1.0`
 - Phase 9: `84e004d` — `style: standardize page spacing to space-y-6`
 - Phase 9: `92dc7d7` — `fix: add id/htmlFor to all form fields for accessibility`
 - Phase 9: `727a7b0` — `fix: dashboard — type-guard billing filter, getRecent for sessions`
